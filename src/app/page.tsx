@@ -1,70 +1,89 @@
 import { Calculator } from '@/components/Calculator';
-import { ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center w-full space-y-20 pb-20">
+    <div className="flex flex-col w-full bg-[#D6D6D6] text-[#1E1E1E]">
 
-      {/* Hero Section */}
-      <section className="w-full flex flex-col items-center justify-center pt-16 text-center space-y-6 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+      {/* Brutalist Hero Block */}
+      <section className="w-full flex flex-col pt-16 pb-12 px-6 md:px-10 border-b-[1px] border-[#1E1E1E] bg-[#FE5238]">
+        <div className="flex justify-between items-start w-full">
+          <h1 className="text-[120px] md:text-[200px] font-black tracking-tighter leading-[0.85] text-[#1E1E1E]">
+            Yield/ <br />
+            <span className="inline-block relative">
+              Fidelity
+              {/* Abstract geometric element */}
+              <div className="absolute -top-4 -right-20 w-16 h-4 bg-[#1E1E1E] -rotate-45 hidden md:block"></div>
+            </span>
+          </h1>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium mb-4">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          Live Base Network Analysis
+          <div className="hidden lg:block w-[300px] text-lg font-medium tracking-tight mt-10">
+            Operational Intelligence for Every Vault, Every Chain, Every Depositor.
+          </div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white max-w-4xl">
-          Don't Let Gas Fees <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">
-            Eat Your Yield.
-          </span>
-        </h1>
-
-        <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mt-4">
-          Real-time transparency into Net Realized APY. Calculate exactly how many days it takes for your deposit to break even against L2 gas and performance fees.
-        </p>
-
-        <div className="flex items-center gap-4 mt-8">
-          <a href="#calculator" className="px-6 py-3 rounded-xl bg-green-500 hover:bg-green-400 text-black font-semibold transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-            Calculate Break-Even <ArrowRight className="w-4 h-4" />
-          </a>
-          <a href="#features" className="px-6 py-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-medium transition-all">
-            How it works
+        <div className="max-w-3xl mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 border-t-[1px] border-[#1E1E1E] pt-8">
+          <p className="font-mono text-sm leading-relaxed font-bold uppercase tracking-wider">
+            Analyze on-chain Gas fees and platform Performance fees to flag negative returns in near real-time.
+          </p>
+          <a href="#calculator" className="w-fit h-fit px-8 py-4 border-[1.5px] border-[#1E1E1E] rounded-full font-mono text-sm font-bold uppercase tracking-widest hover:bg-[#1E1E1E] hover:text-[#FE5238] transition-colors flex items-center gap-2 group">
+            Initialize Calc <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </a>
         </div>
+      </section>
 
-        {/* Value Props */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mt-16 text-left">
-          <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 backdrop-blur-sm">
-            <Zap className="w-8 h-8 text-green-400 mb-4" />
-            <h3 className="text-white font-semibold text-lg">Real-Time Gas Fares</h3>
-            <p className="text-zinc-400 mt-2 text-sm">Pulls exact gwei from the Base network to estimate your entry and exit costs.</p>
-          </div>
-          <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 backdrop-blur-sm">
-            <ShieldCheck className="w-8 h-8 text-emerald-400 mb-4" />
-            <h3 className="text-white font-semibold text-lg">Drift Analysis</h3>
-            <p className="text-zinc-400 mt-2 text-sm">Compares projected APY against actual Price-Per-Share (PPS) growth.</p>
-          </div>
-          <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 backdrop-blur-sm">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center mb-4 text-black font-bold">B</div>
-            <h3 className="text-white font-semibold text-lg">Beefy Ecosystem</h3>
-            <p className="text-zinc-400 mt-2 text-sm">Directly integrates with the Beefy API to monitor vault performance over time.</p>
-          </div>
+      {/* Grid Features */}
+      <section className="w-full grid grid-cols-1 md:grid-cols-3 bg-[#EBEBEB]">
+        <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center">01</div>
+          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Real-Time Gas Fares</h3>
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+            Pulls exact gwei from the Base network to mathematically estimate your entry and exit costs.
+          </p>
+        </div>
+        <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center">02</div>
+          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Drift Analysis</h3>
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+            Compares projected APY against verified Price-Per-Share (PPS) chronological growth points.
+          </p>
+        </div>
+        <div className="p-8 group bg-[#D6D6D6] hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center bg-[#FE5238] text-[#1E1E1E]">B</div>
+          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Beefy Ecosystem</h3>
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+            Directly integrates with the live API to dynamically monitor vault performance over intervals.
+          </p>
         </div>
       </section>
 
       {/* Calculator Section */}
-      <section id="calculator" className="w-full max-w-5xl pt-10">
-        <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold text-white mb-2">Break-Even Calculator</h2>
-          <p className="text-zinc-400">Enter your deposit amount and select a vault to see your true yield timeline.</p>
-        </div>
+      <section id="calculator" className="w-full border-t-[1px] border-[#1E1E1E] bg-[#1E1E1E] text-[#D6D6D6]">
+        <div className="grid grid-cols-1 lg:grid-cols-3">
+          {/* Left info column */}
+          <div className="border-b-[1px] lg:border-b-0 lg:border-r-[1px] border-[#D6D6D6]/30 p-8 md:p-12 lg:flex lg:flex-col lg:justify-between">
+            <div>
+              <div className="font-mono text-xs text-[#FE5238] uppercase font-bold tracking-widest mb-4">/// Simulation Module</div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Break-Even<br />Analyzer</h2>
+              <p className="font-mono text-sm leading-relaxed opacity-70">
+                Enter your deposit loadout and assign a target Vault strategy. System will extrapolate chronological yield against gas friction to identify your breakeven threshold.
+              </p>
+            </div>
 
-        <Calculator />
+            {/* Tech Data Block abstract UI */}
+            <div className="font-mono text-[10px] text-[#D6D6D6]/40 hidden lg:grid grid-cols-2 gap-x-4 gap-y-1 mt-12">
+              <div>SYS.VOL</div><div>01001100</div>
+              <div>LATENCY.MS</div><div>14ms <span className="text-green-500">OK</span></div>
+              <div>L2.FETCH</div><div>base-rpc</div>
+              <div>RATE.LM</div><div>0x81FA</div>
+            </div>
+          </div>
+
+          {/* Right component column */}
+          <div className="lg:col-span-2 p-6 md:p-12">
+            <Calculator />
+          </div>
+        </div>
       </section>
     </div>
   );

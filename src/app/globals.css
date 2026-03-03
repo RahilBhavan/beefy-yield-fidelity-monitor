@@ -1,53 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --color-shift-red: #FE5238;
+  --color-shift-bg: #D6D6D6;
+  --color-shift-dark: #1E1E1E;
+  --color-shift-light: #EBEBEB;
 }
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --card: #ffffff;
-    --card-foreground: #09090b;
-    --popover: #ffffff;
-    --popover-foreground: #09090b;
-    --primary: #4ade80; /* Beefy Greenish */
-    --primary-foreground: #022c22;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #4ade80;
-    --radius: 0.75rem;
+    --background: #D6D6D6;
+    --foreground: #1E1E1E;
+
+    --card: #EBEBEB;
+    --card-foreground: #1E1E1E;
+
+    --popover: #EBEBEB;
+    --popover-foreground: #1E1E1E;
+
+    --primary: #FE5238;
+    --primary-foreground: #1E1E1E;
+
+    --secondary: #1E1E1E;
+    --secondary-foreground: #D6D6D6;
+
+    --muted: #EBEBEB;
+    --muted-foreground: #666666;
+
+    --accent: #EBEBEB;
+    --accent-foreground: #1E1E1E;
+
+    --destructive: #FE5238;
+    --destructive-foreground: #1E1E1E;
+
+    --border: #1E1E1E;
+    --input: #1E1E1E;
+    --ring: #FE5238;
+
+    --radius: 0rem;
+    /* Neo-Brutalism uses hard edges */
   }
+
+  /* No dark mode toggle - brutalism forces high contrast themes */
   .dark {
-    --background: #000000;
-    --foreground: #fafafa;
-    --card: #09090b;
-    --card-foreground: #fafafa;
-    --popover: #09090b;
-    --popover-foreground: #fafafa;
-    --primary: #22c55e;
-    --primary-foreground: #052e16;
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #22c55e;
+    --background: #1E1E1E;
+    --foreground: #D6D6D6;
+
+    --card: #2A2A2A;
+    --card-foreground: #D6D6D6;
+
+    --popover: #2A2A2A;
+    --popover-foreground: #D6D6D6;
+
+    --primary: #FE5238;
+    --primary-foreground: #1E1E1E;
+
+    --secondary: #D6D6D6;
+    --secondary-foreground: #1E1E1E;
+
+    --border: #D6D6D6;
+    --input: #D6D6D6;
+    --ring: #FE5238;
   }
 }
 
@@ -55,7 +71,25 @@
   * {
     @apply border-[var(--border)];
   }
+
   body {
     @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+    /* Remove default margins, ensure hard edges */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Remove scrollbars for cleaner aesthetic or style them heavily */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid var(--border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--foreground);
   }
 }
