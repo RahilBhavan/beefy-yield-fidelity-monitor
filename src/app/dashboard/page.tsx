@@ -36,7 +36,7 @@ export default function Dashboard() {
                         <ShieldAlert className="w-6 h-6 text-red-400 mb-4" />
                         <div className="text-3xl font-bold text-white mb-1">12</div>
                         <div className="text-sm text-zinc-400">Vaults flagged for severe Price-Per-Share Drift (&gt;5%)</div>
-                        <a href="#" className="text-xs text-red-400 font-medium mt-4 flex items-center gap-1 hover:text-red-300">
+                        <a href="/dashboard/strategies" className="text-xs text-red-400 font-medium mt-4 flex items-center gap-1 hover:text-red-300">
                             Review Strategies <ArrowRight className="w-3 h-3" />
                         </a>
                     </div>
