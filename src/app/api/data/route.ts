@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 
+export const dynamic = 'force-dynamic';
+
 const BASE_RPC_URL = 'https://mainnet.base.org';
 
 interface VaultData {
