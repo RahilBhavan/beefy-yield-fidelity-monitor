@@ -37,19 +37,19 @@ export default function RootLayout({
                 <span className="font-semibold text-xl tracking-tight text-zinc-100">Yield Fidelity</span>
               </div>
               <nav className="hidden md:flex items-center gap-6">
-                <a href="#" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Dashboard</a>
-                <a href="#" className="text-sm font-medium text-green-400 flex items-center gap-1 group">
+                <a href="/dashboard" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Dashboard</a>
+                <a href="/" className="text-sm font-medium text-green-400 flex items-center gap-1 group">
                   Break-Even Calculator
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse"></div>
                 </a>
               </nav>
             </div>
           </header>
-          
+
           <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {children}
           </main>
-          
+
           <footer className="border-t border-white/5 py-8 mt-auto">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-2">
               <p className="text-zinc-500 text-sm">Developed by Rahil Bhavan</p>
