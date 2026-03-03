@@ -2,6 +2,12 @@ import { HeatMap } from '@/components/HeatMap';
 import { DriftChart } from '@/components/DriftChart';
 import { TriangleAlert, CopyMinus } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Dashboard | Beefy Yield-Fidelity',
+    description: 'Command center and system analytics.',
+};
 
 export default function Dashboard() {
     return (

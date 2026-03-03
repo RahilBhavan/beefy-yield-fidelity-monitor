@@ -35,22 +35,22 @@ export default function Home() {
       {/* Grid Features */}
       <section className="w-full grid grid-cols-1 md:grid-cols-3 bg-[#EBEBEB]">
         <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
-          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center">01</div>
-          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Real-Time Gas Fares</h3>
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center" aria-hidden="true">01</div>
+          <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Real-Time Gas Fares</h2>
           <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
             Pulls exact gwei from the Base network to mathematically estimate your entry and exit costs.
           </p>
         </div>
         <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
-          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center">02</div>
-          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Drift Analysis</h3>
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center" aria-hidden="true">02</div>
+          <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Drift Analysis</h2>
           <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
             Compares projected APY against verified Price-Per-Share (PPS) chronological growth points.
           </p>
         </div>
         <div className="p-8 group bg-[#D6D6D6] hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
-          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center bg-[#FE5238] text-[#1E1E1E]">B</div>
-          <h3 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Beefy Ecosystem</h3>
+          <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center bg-[#FE5238] text-[#1E1E1E]" aria-hidden="true">B</div>
+          <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Beefy Ecosystem</h2>
           <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
             Directly integrates with the live API to dynamically monitor vault performance over intervals.
           </p>
@@ -63,7 +63,7 @@ export default function Home() {
           {/* Left info column */}
           <div className="border-b-[1px] lg:border-b-0 lg:border-r-[1px] border-[#D6D6D6]/30 p-8 md:p-12 lg:flex lg:flex-col lg:justify-between">
             <div>
-              <div className="font-mono text-xs text-[#FE5238] uppercase font-bold tracking-widest mb-4">/// Simulation Module</div>
+              <div className="font-mono text-xs text-[#FE5238] uppercase font-bold tracking-widest mb-4">{"/// Simulation Module"}</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Break-Even<br />Analyzer</h2>
               <p className="font-mono text-sm leading-relaxed opacity-70">
                 Enter your deposit loadout and assign a target Vault strategy. System will extrapolate chronological yield against gas friction to identify your breakeven threshold.

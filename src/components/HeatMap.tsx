@@ -25,9 +25,9 @@ export function HeatMap() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 bg-[#1E1E1E]">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 bg-[#1E1E1E]">
                 {MOCK_CHAINS.map((chain, index) => (
-                    <div
+                    <li
                         key={chain.name}
                         className={`p-6 border-b-[1.5px] sm:border-b-0 border-[#D6D6D6]/30 ${index !== MOCK_CHAINS.length - 1 && 'sm:border-r-[1.5px]'} group hover:bg-[#D6D6D6]/5 transition-colors`}
                     >
@@ -63,9 +63,9 @@ export function HeatMap() {
                                 <div className="font-mono text-lg font-bold mt-1 group-hover:text-green-500 transition-colors">{chain.apy}</div>
                             </div>
                         </div>
-                    </div>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
 }

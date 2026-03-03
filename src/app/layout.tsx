@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: '--font-inter',
@@ -18,6 +20,8 @@ export const metadata: Metadata = {
   title: 'Beefy Op/Intelligence',
   description: 'Operational Intelligence for Yield-Fidelity',
 };
+
+import Link from 'next/link';
 
 export default function RootLayout({
   children,
@@ -37,7 +41,8 @@ export default function RootLayout({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 border-[1.5px] border-[#1E1E1E] flex items-center justify-center font-bold text-lg bg-[#FE5238] text-[#1E1E1E] rotate-3 hover:-rotate-3 transition-transform">
                     {/* Abstract angular shift icon */}
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-label="Beefy Angular Icon" role="img">
+                      <title>Beefy Angular Icon</title>
                       <path d="M10 4L2 12L10 20M14 4L22 12L14 20" />
                     </svg>
                   </div>
@@ -46,10 +51,10 @@ export default function RootLayout({
               </div>
 
               <nav className="flex items-center justify-end md:justify-center px-6 md:px-0">
-                <a href="/dashboard" className="text-xs font-mono font-bold uppercase tracking-widest hover:text-[#FE5238] flex items-center gap-2">
-                  <span className="w-6 h-[1.5px] bg-current inline-block"></span>
+                <Link href="/dashboard" className="text-xs font-mono font-bold uppercase tracking-widest hover:text-[#FE5238] flex items-center gap-2" aria-label="Go to Dashboard">
+                  <span className="w-6 h-[1.5px] bg-current inline-block" aria-hidden="true"></span>
                   Menu
-                </a>
+                </Link>
               </nav>
 
             </div>
@@ -57,6 +62,8 @@ export default function RootLayout({
 
           <main className="flex-1 w-full bg-[#1E1E1E] text-[#D6D6D6] border-b-[1px] border-[#1E1E1E]">
             {children}
+            <Analytics />
+            <SpeedInsights />
           </main>
 
           <footer className="bg-[#D6D6D6] text-[#1E1E1E] py-10 px-6 md:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0 border-t border-[#1E1E1E]">
@@ -67,9 +74,9 @@ export default function RootLayout({
             <div className="md:border-r-[1px] border-[#1E1E1E] md:px-10">
               <div className="font-mono text-xs uppercase font-bold mb-4">Systems</div>
               <ul className="space-y-2 text-sm">
-                <li><a href="/" className="hover:text-[#FE5238] transition-colors">Break-Even Calculator</a></li>
-                <li><a href="/dashboard" className="hover:text-[#FE5238] transition-colors">Yield Dashboard</a></li>
-                <li><a href="/dashboard/strategies" className="hover:text-[#FE5238] transition-colors">Flagged Strategies</a></li>
+                <li><Link href="/" className="hover:text-[#FE5238] transition-colors">Break-Even Calculator</Link></li>
+                <li><Link href="/dashboard" className="hover:text-[#FE5238] transition-colors">Yield Dashboard</Link></li>
+                <li><Link href="/dashboard/strategies" className="hover:text-[#FE5238] transition-colors">Flagged Strategies</Link></li>
               </ul>
             </div>
             <div className="md:border-r-[1px] border-[#1E1E1E] md:px-10">

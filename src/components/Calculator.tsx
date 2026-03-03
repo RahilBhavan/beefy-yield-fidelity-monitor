@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { AlertTriangle, ArrowRight, Zap } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 interface Vault {
     id: string;
@@ -89,12 +89,13 @@ export function Calculator() {
             <div className="p-8 border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-[#D6D6D6]/30 flex flex-col space-y-8 bg-[#2A2A2A]">
 
                 <div>
-                    <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 block">
+                    <label htmlFor="deposit-input" className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 block">
                         [INPUT] Intended Deposit Size : USD
                     </label>
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xl opacity-50">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xl opacity-50" aria-hidden="true">$</span>
                         <input
+                            id="deposit-input"
                             type="number"
                             value={deposit}
                             onChange={(e) => setDeposit(e.target.value)}
@@ -105,18 +106,20 @@ export function Calculator() {
                 </div>
 
                 <div className="flex-1 flex flex-col min-h-0">
-                    <label className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 flex items-center justify-between">
+                    <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 flex items-center justify-between" id="vault-list-label">
                         <span>[SELECT] Target Vault</span>
                         <span className="px-2 py-0.5 border border-[#FE5238] text-[#FE5238] text-[10px]">BASE/L2</span>
-                    </label>
-                    <div className="flex-1 overflow-y-auto max-h-[250px] border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]">
+                    </div>
+                    <div className="flex-1 overflow-y-auto max-h-[250px] border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]" role="listbox" aria-labelledby="vault-list-label">
                         {vaults.slice(0, 10).map((vault) => (
                             <button
                                 key={vault.id}
+                                role="option"
+                                aria-selected={selectedVaultId === vault.id}
                                 onClick={() => setSelectedVaultId(vault.id)}
                                 className={`w-full flex items-center justify-between px-4 py-3 border-b border-[#D6D6D6]/10 text-left transition-colors ${selectedVaultId === vault.id
-                                        ? 'bg-[#EBEBEB] text-[#1E1E1E]'
-                                        : 'text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
+                                    ? 'bg-[#EBEBEB] text-[#1E1E1E]'
+                                    : 'text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
                                     }`}
                             >
                                 <div>

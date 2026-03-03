@@ -3,6 +3,14 @@ import { ethers } from 'ethers';
 
 const BASE_RPC_URL = 'https://mainnet.base.org';
 
+interface VaultData {
+    id: string;
+    name: string;
+    chain: string;
+    tvl?: number;
+    [key: string]: unknown;
+}
+
 export async function GET() {
     try {
         // 1. Fetch Beefy Data for Base Chain
@@ -19,11 +27,11 @@ export async function GET() {
         const tokenPrices = await lpsRes.json();
 
         // Filter only Base vaults
-        const baseVaults = vaults.filter((v: any) => v.chain === 'base');
+        const baseVaults = vaults.filter((v: VaultData) => v.chain === 'base');
 
         // Attach APY and TVL
-        const enrichedVaults = baseVaults.map((vault: any) => {
-            const apyData = apys[vault.id] || {};
+        const enrichedVaults = baseVaults.map((vault: VaultData) => {
+            const apyData: { totalApy?: number, vaultApr?: number } = apys[vault.id] || {};
             const tvl = tvls[vault.chain]?.[vault.id] || 0;
             return {
                 id: vault.id,
@@ -32,9 +40,9 @@ export async function GET() {
                 tvl: tvl,
                 apy: apyData.totalApy || 0,
                 dailyYield: (apyData.totalApy || 0) / 365,
-                fee: apyData.vaultApr ? (apyData.totalApy - apyData.vaultApr) : 0 // Rough estimation of performance fee diff
+                fee: apyData.vaultApr ? ((apyData.totalApy || 0) - apyData.vaultApr) : 0 // Rough estimation of performance fee diff
             };
-        }).sort((a: any, b: any) => b.tvl - a.tvl) // Sort by TVL
+        }).sort((a: { tvl: number }, b: { tvl: number }) => b.tvl - a.tvl) // Sort by TVL
             .slice(0, 50); // Top 50 vaults
 
         // 2. Fetch Gas Data from Base using Ethers

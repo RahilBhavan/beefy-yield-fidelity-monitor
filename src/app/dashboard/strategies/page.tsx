@@ -1,5 +1,11 @@
 import { ArrowLeft, Ban } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Flagged Strategies | Beefy Yield-Fidelity',
+    description: 'Review high-risk drift vaults.',
+};
 
 const FLAGGED_VAULTS = [
     { id: '1', name: 'USDC-USDT-Base', drift: '-5.2%', tvl: '$12.5M', apy: '4.1%' },
@@ -10,7 +16,7 @@ const FLAGGED_VAULTS = [
 
 export default function Strategies() {
     return (
-        <div className="flex flex-col w-full bg-[#D6D6D6] text-[#1E1E1E]">
+        <main className="flex flex-col w-full bg-[#D6D6D6] text-[#1E1E1E]">
 
             {/* Header */}
             <div className="w-full flex items-center justify-between px-6 md:px-10 py-8 border-b-[1.5px] border-[#1E1E1E]">
@@ -64,6 +70,6 @@ export default function Strategies() {
             <div className="h-64 border-t-[1.5px] border-[#1E1E1E] bg-[#D6D6D6] w-full flex items-center justify-center pattern-isometric pattern-[#1E1E1E] pattern-bg-white pattern-size-8 pattern-opacity-10">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-widest opacity-30">END OF RECORDS</span>
             </div>
-        </div>
+        </main>
     );
 }

@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
 // Vercel Cron compatible endpoint
+interface ScrapedVault {
+    id: string;
+    name: string;
+    chain: string;
+    tvl?: number;
+    targetApy?: number;
+    [key: string]: unknown;
+}
+
 export async function GET(request: Request) {
     // Simple auth check to ensure only Vercel Cron or specific admins ping this route
     const authHeader = request.headers.get('authorization');
@@ -24,15 +33,15 @@ export async function GET(request: Request) {
         const tvls = await tvlRes.json();
 
         // 2. Identify top 50 vaults globally (or per chain, but we'll do globally for now based on TVL)
-        const enrichedVaults = allVaults.map((vault: any) => {
+        const enrichedVaults = allVaults.map((vault: ScrapedVault) => {
             const tvl = tvls[vault.chain]?.[vault.id] || 0;
             const targetApy = apys[vault.id]?.totalApy || 0;
             return { ...vault, tvl, targetApy };
         })
-            .sort((a: any, b: any) => b.tvl - a.tvl)
+            .sort((a: { tvl: number }, b: { tvl: number }) => b.tvl - a.tvl)
             .slice(0, 50);
 
-        const upsertVaults = enrichedVaults.map((v: any) => ({
+        const upsertVaults = enrichedVaults.map((v: ScrapedVault) => ({
             id: v.id,
             name: v.name,
             chain: v.chain,
@@ -65,10 +74,10 @@ export async function GET(request: Request) {
         // In a real production DAO environment, here we would instantiate Ethers.js
         // and call `vaultContract.getPricePerFullShare()` for each of the 50 vaults via MultiCall.
 
-        const ppsRecords = enrichedVaults.map((v: any) => {
+        const ppsRecords = enrichedVaults.map((v: ScrapedVault) => {
             // MOCK: Generate a deterministic PPS that slowly drifts down from projected APY by 0-5% randomly
             // Drift mechanism: Target APY * (0.95 + random(0.05))
-            const theoreticalDailyGrowth = (v.targetApy / 365);
+            const theoreticalDailyGrowth = ((v.targetApy || 0) / 365);
             const randomDriftModifier = 0.95 + (Math.random() * 0.05);
             const actualDailyGrowth = theoreticalDailyGrowth * randomDriftModifier;
 
@@ -99,8 +108,8 @@ export async function GET(request: Request) {
             sample: ppsRecords[0]
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Cron scrape failed:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
