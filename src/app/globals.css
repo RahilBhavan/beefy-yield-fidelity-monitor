@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #09090b;
+    --card: #ffffff;
+    --card-foreground: #09090b;
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+    --primary: #4ade80; /* Beefy Greenish */
+    --primary-foreground: #022c22;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #4ade80;
+    --radius: 0.75rem;
+  }
+  .dark {
+    --background: #000000;
+    --foreground: #fafafa;
+    --card: #09090b;
+    --card-foreground: #fafafa;
+    --popover: #09090b;
+    --popover-foreground: #fafafa;
+    --primary: #22c55e;
+    --primary-foreground: #052e16;
+    --secondary: #27272a;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #22c55e;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[var(--border)];
+  }
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+  }
+}
