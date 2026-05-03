@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Beefy yield–fidelity monitor
 
-## Getting Started
+Next.js dashboard for **transparent net yield** on Beefy vaults: break-even timing, gas and fee friction, and drift between advertised APR and realized **price-per-share** growth.
 
-First, run the development server:
+## Why this exists
+
+- **Gas gap:** Small deposits can stay **net negative** for weeks after entry + exit gas and performance fees.
+- **Strategy drift:** Realized APY depends on `harvest()` cadence and TVL; users may earn less than the headline APR suggests.
+
+This app surfaces **break-even** and **yield health** so users and strategists see friction-adjusted numbers, not only headline rates.
+
+## Stack
+
+- **Frontend:** Next.js (App Router), React 19, Tailwind CSS v4, Framer Motion
+- **Data:** Supabase (PostgreSQL) for historical vault / PPS-style tracking (see [PRD.md](PRD.md))
+- **On-chain / APIs:** Beefy metadata, Ethers.js v6 for gas and chain context
+
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Add Supabase and RPC keys in `.env.local` when you wire ingestion (see [PRD.md](PRD.md)).
 
-## Learn More
+## Status
 
-To learn more about Next.js, take a look at the following resources:
+**Active development** — MVP targets a break-even calculator on Base, then Supabase-backed drift charts for top vaults (see roadmap in [PRD.md](PRD.md)).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See repository root for `LICENSE` if present; otherwise default repository terms apply.
