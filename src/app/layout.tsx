@@ -46,7 +46,7 @@ export default function RootLayout({
                       <path d="M10 4L2 12L10 20M14 4L22 12L14 20" />
                     </svg>
                   </div>
-                  <span className="font-black text-2xl tracking-tighter uppercase">Beefy<span className="text-[#FE5238]">.fi</span></span>
+                  <span className="font-black text-2xl tracking-tighter uppercase">Beefy<span className="text-[#A82A18]">.fi</span></span>
                 </div>
               </div>
 
@@ -68,8 +68,8 @@ export default function RootLayout({
 
           <footer className="bg-[#D6D6D6] text-[#1E1E1E] py-10 px-6 md:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0 border-t border-[#1E1E1E]">
             <div className="md:border-r-[1px] border-[#1E1E1E] md:pr-10">
-              <span className="font-black text-xl tracking-tighter uppercase mb-4 block">Beefy<span className="text-[#FE5238]">.fi</span></span>
-              <p className="text-sm font-mono opacity-60">Operative yield intelligence.</p>
+              <span className="font-black text-xl tracking-tighter uppercase mb-4 block">Beefy<span className="text-[#A82A18]">.fi</span></span>
+              <p className="text-sm font-mono text-[#4A4A4A]">Operative yield intelligence.</p>
             </div>
             <div className="md:border-r-[1px] border-[#1E1E1E] md:px-10">
               <div className="font-mono text-xs uppercase font-bold mb-4">Systems</div>
@@ -82,10 +82,10 @@ export default function RootLayout({
             <div className="md:border-r-[1px] border-[#1E1E1E] md:px-10">
               <div className="font-mono text-xs uppercase font-bold mb-4">Logs</div>
               <p className="font-mono text-[10px] opacity-70 leading-relaxed uppercase">
-                SYSTEM NOMINAL. <br />
-                DB: CONNECTED.<br />
-                DRIFT: MONITORING.<br />
-                VERSION: 1.0.0
+                MVP: BASE ONLY.<br />
+                PPS: DAILY ON-CHAIN.<br />
+                STATUS: SEE DASHBOARD.<br />
+                VERSION: 0.1.0
               </p>
             </div>
             <div className="md:pl-10 flex flex-col justify-between">

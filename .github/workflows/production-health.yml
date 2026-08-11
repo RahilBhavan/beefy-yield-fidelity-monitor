@@ -1,0 +1,24 @@
+name: Production health
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-health
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify production health
+        run: |
+          curl --fail-with-body --retry 2 --retry-all-errors --max-time 20 \
+            --output health.json \
+            https://yield.rahilbhavan.com/api/health
+          jq -e '.status == "ok" and .database.configured == true' health.json

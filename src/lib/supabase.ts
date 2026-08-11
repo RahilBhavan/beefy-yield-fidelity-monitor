@@ -1,13 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mock.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-key';
+function requiredEnvironmentVariable(name: string): string {
+    const value = process.env[name];
+    if (!value) throw new Error(`${name} is required`);
+    return value;
+}
 
-// For backend cron jobs, we need the service role key to insert records,
-// as RLS only allows public reading.
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+const serverAuthOptions = {
     auth: {
         persistSession: false,
         autoRefreshToken: false,
-    }
-});
+    },
+};
+
+export function createSupabaseAdmin() {
+    return createClient(
+        requiredEnvironmentVariable('NEXT_PUBLIC_SUPABASE_URL'),
+        requiredEnvironmentVariable('SUPABASE_SERVICE_ROLE_KEY'),
+        serverAuthOptions,
+    );
+}
+
+export function createSupabaseReader() {
+    return createClient(
+        requiredEnvironmentVariable('NEXT_PUBLIC_SUPABASE_URL'),
+        requiredEnvironmentVariable('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+        serverAuthOptions,
+    );
+}
+
+export function hasSupabaseReaderConfiguration() {
+    return Boolean(
+        process.env.NEXT_PUBLIC_SUPABASE_URL
+        && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+}

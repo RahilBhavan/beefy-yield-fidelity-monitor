@@ -1,35 +1,39 @@
 {
-  "name": "my-app",
+  "name": "beefy-yield-fidelity-monitor",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:integration": "RUN_INTEGRATION_TESTS=1 vitest run src/lib/pps.integration.test.ts",
+    "test:e2e": "playwright test",
+    "test:load": "node scripts/load-smoke.mjs",
+    "check": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
-    "@next/font": "^14.2.15",
-    "@supabase/supabase-js": "^2.98.0",
+    "@supabase/supabase-js": "^2.112.3",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
-    "clsx": "^2.1.1",
-    "ethers": "^6.16.0",
-    "framer-motion": "^12.34.5",
+    "ethers": "^6.17.0",
     "lucide-react": "^0.576.0",
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "tailwind-merge": "^3.5.0"
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "eslint-config-next": "^16.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

@@ -1,6 +1,6 @@
 # 📄 PRD: Beefy Yield-Fidelity Monitor
-**Version**: 1.0
-**Status**: Proposal / Draft
+**Version**: 1.1
+**Status**: Base MVP / Validation
 **Owner**: Rahil Bhavan (University of Michigan)
 
 ## 1. Executive Summary
@@ -26,6 +26,9 @@ To develop a high-fidelity monitoring dashboard that provides real-time transpar
 - **Historical Tracking**: Store `pricePerFullShare` data daily.
 - **Drift Analysis**: Calculate the delta between Expected Yield (from Beefy API) and Actual Growth (from PPS change).
 - **Visualization**: Interactive charts showing the "Yield Curve" vs. the "Efficiency Floor."
+- **Validity Gate**: Require at least three valid observations spanning seven
+  days and store APY, TVL, contract, block, raw PPS, decimals, provider, and run
+  provenance with every observation.
 
 ### FR3: Multi-Chain Alerts
 - **Feature**: A "Heat Map" of all Beefy-supported chains (Base, Arbitrum, etc.) showing which networks currently have the lowest "Friction" (Gas vs. Yield ratio).
@@ -41,6 +44,7 @@ To develop a high-fidelity monitoring dashboard that provides real-time transpar
 ## 5. Success Metrics (KPIs)
 - **User Adoption**: % of unique visitors using the Calculator before clicking "Deposit."
 - **Accuracy**: Drift analysis error margin < 0.5% compared to on-chain vault growth.
+- **Reliability**: At least 99.5% successful daily scrapes with data less than 36 hours old.
 - **Engagement**: Increase in Average Deposit Size (by steering users away from "Gas-Negative" positions).
 
 ## 6. Implementation Roadmap

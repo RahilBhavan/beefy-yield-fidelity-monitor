@@ -1,117 +1,133 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getBaseVaultMarketData } from '@/lib/beefy';
+import { readBasePricePerShares } from '@/lib/pps';
+import { createSupabaseAdmin } from '@/lib/supabase';
+import { baseChain } from '@/lib/chains';
 
 export const dynamic = 'force-dynamic';
 
-// Vercel Cron compatible endpoint
-interface ScrapedVault {
-    id: string;
-    name: string;
-    chain: string;
-    tvl?: number;
-    targetApy?: number;
-    [key: string]: unknown;
-}
-
 export async function GET(request: Request) {
-    // Simple auth check to ensure only Vercel Cron or specific admins ping this route
+    const cronSecret = process.env.CRON_SECRET;
     const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const snapshotDate = new Date().toISOString().slice(0, 10);
+    let runId: string | null = null;
+    let supabase: ReturnType<typeof createSupabaseAdmin> | null = null;
+
     try {
-        console.log("Starting PPS Cron Job...");
+        supabase = createSupabaseAdmin();
+        const { data: claimData, error: claimError } = await supabase.rpc('begin_scrape_run', {
+            p_chain: baseChain.slug,
+            p_run_date: snapshotDate,
+        });
+        if (claimError) throw new Error(`Could not claim scrape run: ${claimError.message}`);
 
-        // 1. Fetch live Beefy data
-        const [vaultsRes, apysRes, tvlRes] = await Promise.all([
-            fetch('https://api.beefy.finance/vaults'),
-            fetch('https://api.beefy.finance/apy/breakdown'),
-            fetch('https://api.beefy.finance/tvl')
-        ]);
+        const claim = Array.isArray(claimData) ? claimData[0] : null;
+        if (!claim?.run_id) throw new Error('Scrape run claim returned no run identifier');
+        runId = claim.run_id;
 
-        const allVaults = await vaultsRes.json();
-        const apys = await apysRes.json();
-        const tvls = await tvlRes.json();
-
-        // 2. Identify top 50 vaults globally (or per chain, but we'll do globally for now based on TVL)
-        const enrichedVaults = allVaults.map((vault: ScrapedVault) => {
-            const tvl = tvls[vault.chain]?.[vault.id] || 0;
-            const targetApy = apys[vault.id]?.totalApy || 0;
-            return { ...vault, tvl, targetApy };
-        })
-            .sort((a: { tvl: number }, b: { tvl: number }) => b.tvl - a.tvl)
-            .slice(0, 50);
-
-        const upsertVaults = enrichedVaults.map((v: ScrapedVault) => ({
-            id: v.id,
-            name: v.name,
-            chain: v.chain,
-            target_apy: v.targetApy,
-            tvl: v.tvl,
-            updated_at: new Date().toISOString()
-        }));
-
-        // 3. Upsert into Supabase `vaults` table
-        const { error: vaultError } = await supabaseAdmin
-            .from('vaults')
-            .upsert(upsertVaults, { onConflict: 'id' });
-
-        if (vaultError) {
-            console.error("Supabase Vaults Upsert Error:", vaultError);
-            throw new Error("Failed to sync vaults to DB");
+        if (!claim.claimed) {
+            return NextResponse.json({
+                success: true,
+                alreadyProcessed: true,
+                runId,
+                status: claim.existing_status,
+                snapshotDate,
+            });
         }
 
-        // 4. Record Daily Price-Per-Share (PPS) snapshot
-        // Beefy exposes `pricePerFullShare` in some of their contract endpoints or APIs.
-        // However, the easiest global way to get PPS for a vault without RPC scraping 50 contracts
-        // is often `https://api.beefy.finance/lps` or querying their graph.
-        // 
-        // Since Beefy doesn't expose a clean `/pps` endpoint for all vaults at once, 
-        // a common workaround for this "Yield Health" metric is to log the user's base yield.
-        // Alternatively, many vaults expose `pricePerFullShare` directly in the Beefy Yield API.
+        const { vaults } = await getBaseVaultMarketData(50, { fresh: true });
+        const batch = await readBasePricePerShares(vaults);
+        const snapshots = batch.snapshots;
 
-        // For this MVP PRD, we will mock the PPS scrape logic based on Target APY 
-        // assuming standard daily growth, so the Drift Analysis can function.
-        // In a real production DAO environment, here we would instantiate Ethers.js
-        // and call `vaultContract.getPricePerFullShare()` for each of the 50 vaults via MultiCall.
+        if (snapshots.length === 0) {
+            throw new Error('No Base vaults returned a valid on-chain PPS');
+        }
 
-        const ppsRecords = enrichedVaults.map((v: ScrapedVault) => {
-            // MOCK: Generate a deterministic PPS that slowly drifts down from projected APY by 0-5% randomly
-            // Drift mechanism: Target APY * (0.95 + random(0.05))
-            const theoreticalDailyGrowth = ((v.targetApy || 0) / 365);
-            const randomDriftModifier = 0.95 + (Math.random() * 0.05);
-            const actualDailyGrowth = theoreticalDailyGrowth * randomDriftModifier;
-
-            // Calculate a pseudo-PPS based on time (e.g. baseline 1.0 + compounded growth)
-            const mockPps = 1.0 + actualDailyGrowth;
-
-            return {
-                vault_id: v.id,
-                price_per_share: mockPps,
-                recorded_at: new Date().toISOString()
-            };
+        const now = new Date();
+        const recordedAt = now.toISOString();
+        const vaultPayload = vaults.map((vault) => ({
+                id: vault.id,
+                name: vault.name,
+                chain: vault.chain,
+                earn_contract_address: vault.earnContractAddress,
+                target_apy: vault.apy,
+                tvl: vault.tvl,
+            }));
+        const vaultById = new Map(vaults.map((vault) => [vault.id, vault]));
+        const validationFailures = [...batch.failures];
+        const snapshotPayload = snapshots.flatMap((snapshot) => {
+            const vault = vaultById.get(snapshot.vaultId);
+            if (!vault || Number(snapshot.pricePerShare) <= 0) {
+                validationFailures.push({
+                    vaultId: snapshot.vaultId,
+                    contractAddress: snapshot.contractAddress,
+                    reason: 'PPS was missing, non-positive, or did not match a tracked vault',
+                });
+                return [];
+            }
+            return [{
+                vault_id: snapshot.vaultId,
+                contract_address: snapshot.contractAddress,
+                price_per_share: snapshot.pricePerShare,
+                raw_price_per_share: snapshot.rawPricePerShare,
+                pps_decimals: snapshot.decimals,
+                target_apy: vault.apy,
+                tvl: vault.tvl,
+            }];
         });
 
-        const { error: ppsError } = await supabaseAdmin
-            .from('pps_history')
-            .insert(ppsRecords);
-
-        if (ppsError) {
-            console.error("Supabase PPS Insert Error:", ppsError);
-            throw new Error("Failed to insert daily PPS records");
-        }
-
-        console.log(`Successfully scraped and recorded data for ${enrichedVaults.length} vaults.`);
+        const { data: recordedCount, error: ingestError } = await supabase.rpc(
+            'ingest_vault_snapshots',
+            {
+                p_run_id: runId,
+                p_vaults: vaultPayload,
+                p_snapshots: snapshotPayload,
+                p_failures: validationFailures.map((failure) => ({
+                    vault_id: failure.vaultId,
+                    contract_address: failure.contractAddress,
+                    reason: failure.reason,
+                })),
+                p_snapshot_date: snapshotDate,
+                p_recorded_at: recordedAt,
+                p_chain_id: baseChain.chainId,
+                p_block_number: batch.blockNumber,
+                p_block_hash: batch.blockHash,
+                p_provider_label: batch.providerLabel,
+            },
+        );
+        if (ingestError) throw new Error(`Atomic ingest failed: ${ingestError.message}`);
 
         return NextResponse.json({
             success: true,
-            message: `Scraped ${enrichedVaults.length} vaults`,
-            sample: ppsRecords[0]
+            runId,
+            chain: baseChain.slug,
+            chainId: baseChain.chainId,
+            blockNumber: batch.blockNumber,
+            blockHash: batch.blockHash,
+            trackedVaults: vaults.length,
+            recordedSnapshots: Number(recordedCount ?? snapshotPayload.length),
+            skippedVaults: validationFailures.length,
+            snapshotDate,
         });
-
     } catch (error: unknown) {
-        console.error("Cron scrape failed:", error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+        console.error('Cron scrape failed:', error);
+        if (runId && supabase) {
+            await supabase
+                .from('scrape_runs')
+                .update({
+                    status: 'failed',
+                    completed_at: new Date().toISOString(),
+                    error_message: error instanceof Error ? error.message : 'Unknown error',
+                })
+                .eq('id', runId);
+        }
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : 'Unknown error' },
+            { status: 500 },
+        );
     }
 }

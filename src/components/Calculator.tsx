@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { calculateBreakEven } from '@/lib/yield';
+import Link from 'next/link';
 
 interface Vault {
     id: string;
@@ -9,12 +11,23 @@ interface Vault {
     chain: string;
     tvl: number;
     apy: number;
+    performanceFee: number;
 }
 
 interface GasData {
     priceGwei: string;
+    entryCostUsd: number;
+    exitCostUsd: number;
     estimatedCostUsd: number;
     ethPrice: number;
+    assumptions: string;
+    estimatedAt: string;
+}
+
+interface SourceData {
+    beefyFetchedAt: string;
+    chainId: number;
+    requestId: string;
 }
 
 export function Calculator() {
@@ -23,13 +36,16 @@ export function Calculator() {
 
     const [vaults, setVaults] = useState<Vault[]>([]);
     const [gasData, setGasData] = useState<GasData | null>(null);
+    const [sourceData, setSourceData] = useState<SourceData | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const res = await fetch('/api/data');
+                if (!res.ok) throw new Error(`Data service returned ${res.status}`);
                 const data = await res.json();
                 if (data.vaults) {
                     setVaults(data.vaults);
@@ -38,8 +54,10 @@ export function Calculator() {
                     }
                 }
                 if (data.gas) setGasData(data.gas);
+                if (data.source) setSourceData(data.source);
             } catch (error) {
                 console.error("Failed to fetch data:", error);
+                setLoadError('Live vault or network data is temporarily unavailable.');
             } finally {
                 setIsLoading(false);
             }
@@ -52,17 +70,20 @@ export function Calculator() {
 
     const calculations = useMemo(() => {
         if (!selectedVault || !gasData || rawDeposit <= 0) return null;
-        const yearlyYield = rawDeposit * selectedVault.apy;
-        const dailyYield = yearlyYield / 365;
-        const totalGasCost = gasData.estimatedCostUsd;
-        const gasEntry = totalGasCost / 2;
-        const gasExit = totalGasCost / 2;
-        const breakEvenDays = dailyYield > 0 ? totalGasCost / dailyYield : Infinity;
+        const result = calculateBreakEven(
+            rawDeposit,
+            selectedVault.apy,
+            gasData.entryCostUsd,
+            gasData.exitCostUsd,
+        );
 
         return {
-            dailyYield, gasEntry, gasExit, totalGasCost,
-            breakEvenDays: Math.ceil(breakEvenDays),
-            willNeverBreakEven: breakEvenDays === Infinity || isNaN(breakEvenDays)
+            dailyYield: result.dailyYieldUsd,
+            gasEntry: gasData.entryCostUsd,
+            gasExit: gasData.exitCostUsd,
+            totalGasCost: result.totalGasCostUsd,
+            breakEvenDays: result.breakEvenDays,
+            willNeverBreakEven: result.breakEvenDays === null,
         };
     }, [selectedVault, gasData, rawDeposit]);
 
@@ -78,6 +99,25 @@ export function Calculator() {
         return (
             <div className="w-full h-[500px] flex items-center justify-center font-mono text-[#FE5238] uppercase text-sm tracking-widest animate-pulse">
                 Initializing.Systems()
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div role="alert" className="w-full min-h-[320px] border-[1.5px] border-[#FE5238] p-8 flex flex-col items-center justify-center text-center gap-5">
+                <AlertTriangle className="w-8 h-8 text-[#FE5238]" />
+                <p className="font-mono text-sm uppercase font-bold">{loadError}</p>
+                <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="border-[1.5px] border-[#D6D6D6] px-5 py-3 font-mono text-xs uppercase font-bold hover:bg-[#D6D6D6] hover:text-[#1E1E1E]"
+                >
+                    Retry
+                </button>
+                <Link href="/methodology" className="font-mono text-xs uppercase underline hover:text-[#FE5238]">
+                    Methodology and limitations
+                </Link>
             </div>
         );
     }
@@ -101,6 +141,8 @@ export function Calculator() {
                             onChange={(e) => setDeposit(e.target.value)}
                             className="w-full bg-[#1E1E1E] border-[1.5px] border-[#D6D6D6]/30 px-10 py-4 text-3xl font-mono text-[#FE5238] focus:outline-none focus:border-[#FE5238] transition-colors rounded-none placeholder:text-[#1e1e1e]"
                             placeholder="0.00"
+                            min="0"
+                            step="any"
                         />
                     </div>
                 </div>
@@ -165,11 +207,11 @@ export function Calculator() {
                                 <span className="text-green-500">+{formatCurrency(calculations.dailyYield)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
-                                <span>L2 Entry Fee</span>
+                                <span>Estimated Entry Fee</span>
                                 <span className="text-[#FE5238] opacity-80">-{formatCurrency(calculations.gasEntry)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
-                                <span>L2 Exit Forecast</span>
+                                <span>Estimated Exit Fee</span>
                                 <span className="text-[#FE5238] opacity-80">-{formatCurrency(calculations.gasExit)}</span>
                             </div>
 
@@ -179,13 +221,22 @@ export function Calculator() {
                             </div>
                         </div>
 
-                        {calculations.breakEvenDays > 30 && !calculations.willNeverBreakEven && (
+                        {(calculations.breakEvenDays ?? 0) > 30 && !calculations.willNeverBreakEven && (
                             <div className="mt-6 border-[1.5px] border-[#FE5238] p-3 flex gap-3 text-[#FE5238] items-start bg-[#FE5238]/10">
                                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <p className="font-mono text-[10px] uppercase font-bold leading-tight">
                                     Warning Override: Deposit density insufficient to offset systemic gas friction inside 30 cycles. Adjust input loadout.
                                 </p>
                             </div>
+                        )}
+
+                        {gasData && (
+                            <p className="mt-4 font-mono text-[10px] leading-relaxed uppercase text-[#D6D6D6]/50">
+                                Estimate as of {new Date(gasData.estimatedAt).toLocaleTimeString()}. {gasData.assumptions}
+                                {' '}Beefy-reported APY already reflects its stated performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
+                                {sourceData && <> Market data fetched {new Date(sourceData.beefyFetchedAt).toLocaleTimeString()} on chain {sourceData.chainId}.</>}
+                                {' '}<Link href="/methodology" className="underline hover:text-[#FE5238]">Methodology and limitations.</Link>
+                            </p>
                         )}
                     </div>
                 ) : (

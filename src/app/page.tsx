@@ -18,13 +18,13 @@ export default function Home() {
           </h1>
 
           <div className="hidden lg:block w-[300px] text-lg font-medium tracking-tight mt-10">
-            Operational Intelligence for Every Vault, Every Chain, Every Depositor.
+            Reproducible Yield Intelligence for Active Beefy Vaults on Base.
           </div>
         </div>
 
         <div className="max-w-3xl mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 border-t-[1px] border-[#1E1E1E] pt-8">
           <p className="font-mono text-sm leading-relaxed font-bold uppercase tracking-wider">
-            Analyze on-chain Gas fees and platform Performance fees to flag negative returns in near real-time.
+            Analyze current Base execution costs and Beefy-reported yield to estimate when a deposit can overcome network friction.
           </p>
           <a href="#calculator" className="w-fit h-fit px-8 py-4 border-[1.5px] border-[#1E1E1E] rounded-full font-mono text-sm font-bold uppercase tracking-widest hover:bg-[#1E1E1E] hover:text-[#FE5238] transition-colors flex items-center gap-2 group">
             Initialize Calc <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -38,7 +38,7 @@ export default function Home() {
           <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center" aria-hidden="true">01</div>
           <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Real-Time Gas Fares</h2>
           <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
-            Pulls exact gwei from the Base network to mathematically estimate your entry and exit costs.
+            Combines current Base execution fees, L1 fee upper bounds, and explicit transaction-size assumptions.
           </p>
         </div>
         <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">

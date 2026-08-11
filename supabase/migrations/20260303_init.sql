@@ -7,6 +7,7 @@ CREATE TABLE public.vaults (
     id TEXT PRIMARY KEY, -- e.g. "aero-usdc-base"
     name TEXT NOT NULL,
     chain TEXT NOT NULL,
+    earn_contract_address TEXT,
     target_apy NUMERIC DEFAULT 0,
     tvl NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -19,11 +20,13 @@ CREATE TABLE public.pps_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     vault_id TEXT NOT NULL REFERENCES public.vaults(id) ON DELETE CASCADE,
     price_per_share NUMERIC NOT NULL,
+    snapshot_date DATE NOT NULL DEFAULT (timezone('utc'::text, now()))::date,
     recorded_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Index for quick lookups on time-series charts
 CREATE INDEX idx_pps_history_vault_time ON public.pps_history(vault_id, recorded_at DESC);
+CREATE UNIQUE INDEX idx_pps_history_vault_date ON public.pps_history(vault_id, snapshot_date);
 
 -- Example RLS (Row Level Security) - read only public access, write only service role
 ALTER TABLE public.vaults ENABLE ROW LEVEL SECURITY;
