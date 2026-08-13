@@ -18,9 +18,11 @@ const EXPORT_COLUMNS = [
     'validation_status',
 ] as const;
 
-function csvCell(value: unknown) {
+export function csvCell(value: unknown) {
     const text = value === null || value === undefined ? '' : String(value);
-    return `"${text.replaceAll('"', '""')}"`;
+    // Neutralize spreadsheet formula injection by prefixing =, +, -, @ cells with a quote.
+    const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
+    return `"${safe.replaceAll('"', '""')}"`;
 }
 
 export async function GET(request: Request) {

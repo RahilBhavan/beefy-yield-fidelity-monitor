@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getBaseVaultMarketData } from '@/lib/beefy';
 import { readBasePricePerShares } from '@/lib/pps';
@@ -6,10 +7,15 @@ import { baseChain } from '@/lib/chains';
 
 export const dynamic = 'force-dynamic';
 
+function isAuthorized(authHeader: string | null, cronSecret: string | undefined): boolean {
+    if (!cronSecret || authHeader === null) return false;
+    const expected = Buffer.from(`Bearer ${cronSecret}`);
+    const provided = Buffer.from(authHeader);
+    return expected.length === provided.length && timingSafeEqual(expected, provided);
+}
+
 export async function GET(request: Request) {
-    const cronSecret = process.env.CRON_SECRET;
-    const authHeader = request.headers.get('authorization');
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!isAuthorized(request.headers.get('authorization'), process.env.CRON_SECRET)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

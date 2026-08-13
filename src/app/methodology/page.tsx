@@ -42,16 +42,20 @@ export default function MethodologyPage() {
                 <p className="mt-5 max-w-2xl font-mono text-sm leading-relaxed">Every displayed result should be reproducible from exported observations, recorded block provenance, and the formulas below.</p>
             </header>
             <div className="grid grid-cols-1 md:grid-cols-2">
-                {sections.map((section) => (
-                    <section key={section.title} className="p-8 md:p-10 border-b md:border-r border-[#1E1E1E]">
-                        <h2 className="text-2xl font-black uppercase">{section.title}</h2>
+                {sections.map((section, index) => (
+                    <section
+                        key={section.title}
+                        className="group p-8 md:p-10 border-b border-[#1E1E1E] last:border-b-0 md:[&:nth-child(odd)]:border-r md:[&:nth-last-child(-n+2)]:border-b-0 hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors"
+                    >
+                        <div className="font-mono text-xs font-bold text-[#A82A18] group-hover:text-[#FE5238]">{String(index + 1).padStart(2, '0')}</div>
+                        <h2 className="mt-2 text-2xl font-black uppercase tracking-tight">{section.title}</h2>
                         <p className="font-mono text-sm leading-relaxed mt-4 opacity-75">{section.body}</p>
                     </section>
                 ))}
             </div>
-            <div className="p-8 md:p-10 flex gap-6 font-mono text-xs uppercase font-bold">
-                <Link href="/dashboard" className="underline hover:text-[#FE5238]">Return to dashboard</Link>
-                <a href="/api/export" className="underline hover:text-[#FE5238]">Download observations</a>
+            <div className="p-8 md:px-10 md:py-8 flex flex-wrap gap-4 border-t border-[#1E1E1E]">
+                <Link href="/dashboard" className="inline-flex h-11 min-w-[44px] items-center rounded-full border-[1.5px] border-[#1E1E1E] px-5 font-mono text-xs font-bold uppercase tracking-widest hover:bg-[#1E1E1E] hover:text-[#FE5238] transition-colors">Return to dashboard</Link>
+                <a href="/api/export" className="inline-flex h-11 min-w-[44px] items-center rounded-full border-[1.5px] border-[#1E1E1E] bg-[#1E1E1E] px-5 font-mono text-xs font-bold uppercase tracking-widest text-[#FE5238] hover:bg-transparent hover:text-[#1E1E1E] transition-colors">Download observations</a>
             </div>
         </div>
     );

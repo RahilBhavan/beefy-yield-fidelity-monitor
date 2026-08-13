@@ -96,7 +96,7 @@ export default function RootLayout({
             <div className="md:pl-10 flex flex-col justify-between">
               <div className="font-mono text-xs uppercase font-bold mb-4">Project</div>
               <a href="https://github.com/RahilBhavan/beefy-yield-fidelity-monitor" target="_blank" rel="noreferrer" className="font-sans text-sm font-medium underline hover:text-[#A82A18]">View source on GitHub</a>
-              <p className="mt-3 font-mono text-[10px] uppercase opacity-80">Independent project. Not affiliated with Beefy.</p>
+              <p className="mt-3 font-mono text-[10px] uppercase opacity-70">Independent project. Not affiliated with Beefy.</p>
             </div>
           </footer>
         </div>

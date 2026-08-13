@@ -41,11 +41,15 @@ export function Calculator() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
+        const controller = new AbortController();
         async function fetchData() {
+            setIsLoading(true);
+            setLoadError(null);
             try {
-                const res = await fetch('/api/data');
+                const res = await fetch('/api/data', { signal: controller.signal });
                 if (!res.ok) throw new Error(`Data service returned ${res.status}`);
                 const data = await res.json();
                 if (data.vaults) {
@@ -57,14 +61,16 @@ export function Calculator() {
                 if (data.gas) setGasData(data.gas);
                 if (data.source) setSourceData(data.source);
             } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
                 console.error("Failed to fetch data:", error);
                 setLoadError('Live vault or network data is temporarily unavailable.');
             } finally {
-                setIsLoading(false);
+                if (!controller.signal.aborted) setIsLoading(false);
             }
         }
         fetchData();
-    }, []);
+        return () => controller.abort();
+    }, [retryCount]);
 
     const selectedVault = useMemo(() => vaults.find(v => v.id === selectedVaultId) || null, [vaults, selectedVaultId]);
     const filteredVaults = useMemo(() => {
@@ -147,7 +153,7 @@ export function Calculator() {
                 <p className="font-mono text-sm uppercase font-bold">{loadError}</p>
                 <button
                     type="button"
-                    onClick={() => window.location.reload()}
+                    onClick={() => setRetryCount((count) => count + 1)}
                     className="border-[1.5px] border-[#D6D6D6] px-5 py-3 font-mono text-xs uppercase font-bold hover:bg-[#D6D6D6] hover:text-[#1E1E1E]"
                 >
                     Retry
@@ -305,7 +311,7 @@ export function Calculator() {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="mt-2 font-mono text-xs text-[#D6D6D6]/65">
+                            <p className="mt-2 font-mono text-xs text-[#D6D6D6]/70">
                                 Downside assumes 25% lower APY and 50% higher fees; upside assumes 25% higher APY and 25% lower fees.
                             </p>
                         </div>
@@ -320,7 +326,7 @@ export function Calculator() {
                         )}
 
                         {gasData && (
-                            <p className="mt-4 font-mono text-xs leading-relaxed text-[#D6D6D6]/75">
+                            <p className="mt-4 font-mono text-xs leading-relaxed text-[#D6D6D6]/70">
                                 Network fee estimate updated {formatTimestamp(gasData.estimatedAt)}. {gasData.assumptions}
                                 {' '}The displayed APY already includes Beefy&apos;s reported performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
                                 {sourceData && <> Vault rates updated {formatTimestamp(sourceData.beefyFetchedAt)} for chain {sourceData.chainId}.</>}

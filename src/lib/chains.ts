@@ -35,7 +35,11 @@ export function getChainAdapter(slug: string): ChainAdapter | null {
 }
 
 export function createChainProvider(chain: ChainAdapter): AbstractProvider {
-    const providers = chain.rpcUrls.map((url) => new JsonRpcProvider(url));
+    const providers = chain.rpcUrls.map((url) => {
+        const request = new FetchRequest(url);
+        request.timeout = 10_000;
+        return new JsonRpcProvider(request);
+    });
     return providers.length === 1 ? providers[0] : new FallbackProvider(providers);
 }
 
@@ -53,4 +57,4 @@ export async function withRpcRetry<T>(operation: () => Promise<T>): Promise<T> {
     }
     throw lastError instanceof Error ? lastError : new Error('RPC operation failed');
 }
-import { AbstractProvider, FallbackProvider, JsonRpcProvider } from 'ethers';
+import { AbstractProvider, FallbackProvider, FetchRequest, JsonRpcProvider } from 'ethers';
