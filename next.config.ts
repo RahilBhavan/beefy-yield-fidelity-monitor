@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 const contentSecurityPolicy = [
   "default-src 'self'",
   // Next.js injects inline bootstrap scripts; Vercel Analytics/Speed Insights load from these hosts.
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  // React dev tooling needs eval; never allowed in production.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} https://va.vercel-scripts.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",

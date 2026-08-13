@@ -88,7 +88,7 @@ export default async function Strategies() {
                                         <tr key={vault.id} className="hover:bg-[#D6D6D6]">
                                             <td className="px-6 py-4 font-bold">
                                                 {vault.name}
-                                                {vault.blockNumber && (
+                                                {vault.blockNumber != null && (
                                                     <a href={`${baseChain.explorerUrl}/block/${vault.blockNumber}`} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1 font-mono text-[10px] font-normal text-[#1E1E1E]/70 underline">
                                                         <span>Block {vault.blockNumber}</span><ExternalLink className="h-3 w-3" aria-hidden="true" />
                                                     </a>

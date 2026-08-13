@@ -206,7 +206,9 @@ export function Calculator() {
                     <p className="mb-2 font-mono text-xs text-[#D6D6D6]" aria-live="polite">
                         Showing {filteredVaults.length} of {vaults.length} vaults
                     </p>
-                    <ul className="flex-1 overflow-y-auto max-h-[250px] border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]" aria-labelledby="vault-list-label">
+                    {/* md+: absolute within the flex-1 wrapper so the list fills the column height set by the results panel instead of stretching it */}
+                    <div className="relative flex-1 min-h-0 md:min-h-[250px]">
+                    <ul className="max-h-[250px] overflow-y-auto border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E] md:absolute md:inset-0 md:max-h-none" aria-labelledby="vault-list-label">
                         {filteredVaults.map((vault) => (
                             <li key={vault.id}>
                                 <button
@@ -234,6 +236,7 @@ export function Calculator() {
                             </li>
                         )}
                     </ul>
+                    </div>
                 </div>
 
             </div>

@@ -201,7 +201,7 @@ export default async function Dashboard() {
                                 <ProvenanceRow label="Provider" value={data.providerLabel ?? 'Unavailable'} />
                                 <ProvenanceRow label="Coverage" value={`${data.latestSnapshotCoveragePercent.toFixed(0)}% valid`} />
                             </dl>
-                            {data.latestBlockNumber && (
+                            {data.latestBlockNumber != null && (
                                 <a href={`${baseChain.explorerUrl}/block/${data.latestBlockNumber}`} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 font-mono text-xs font-bold text-[#FE5238] underline underline-offset-4">
                                     Block {data.latestBlockNumber} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                                 </a>

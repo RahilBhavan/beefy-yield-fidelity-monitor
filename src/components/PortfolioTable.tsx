@@ -197,7 +197,7 @@ function FreshnessLink({ row, explorerUrl, asOf }: { row: PortfolioVault; explor
             href={`${explorerUrl}/block/${row.blockNumber}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 underline decoration-[#1E1E1E]/40 underline-offset-2 hover:text-[#FE5238]"
+            className="-my-3.5 inline-flex min-h-11 items-center gap-1 underline decoration-[#1E1E1E]/40 underline-offset-2 hover:text-[#FE5238]"
             title={`View Base block ${row.blockNumber}`}
         >
             {relativeAge(row.latestRecordedAt, asOf)} <ExternalLink className="h-3 w-3" aria-hidden="true" />
