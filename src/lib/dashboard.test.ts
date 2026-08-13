@@ -54,6 +54,20 @@ describe('drift analysis', () => {
         expect(result.portfolioActualApy).toBeCloseTo(0, 8);
         expect(result.annualizedYieldGapUsd).toBeCloseTo(100, 8);
         expect(result.flaggedVaults[0].annualizedYieldGapUsd).toBeCloseTo(100, 8);
+        expect(result.uniqueObservationDays).toBe(3);
+        expect(result.collectionDays).toBe(8);
+        expect(result.estimatedReadyAt).toBe('2026-01-08T00:00:00.000Z');
+        expect(result.portfolioVaults).toEqual([
+            expect.objectContaining({
+                id: 'vault-1',
+                observations: 3,
+                measurementDays: 8,
+                status: 'review',
+            }),
+        ]);
+        expect(result.portfolioVaults[0].driftPercent).toBeCloseTo(-100, 8);
+        expect(result.driftPoints.at(-1)?.target).toBeCloseTo(0.2091, 3);
+        expect(result.driftPoints.at(-1)?.actual).toBe(0);
     });
 
     it('does not analyze short or incomplete histories', () => {

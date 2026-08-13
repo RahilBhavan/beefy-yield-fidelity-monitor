@@ -55,6 +55,9 @@ test('dashboard reports an honest unconfigured state', async ({ page }) => {
     await expect(page.getByText(/Supabase read credentials are not configured/i).first()).toBeVisible();
     await expect(page.getByText(/unavailable|not ready/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /restore the data pipeline/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Observation data unavailable' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Active Base vaults' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Active Base vaults' })).toBeVisible();
 
     const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

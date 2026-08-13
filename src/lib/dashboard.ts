@@ -27,8 +27,23 @@ export interface SnapshotRow {
 
 export interface DriftPoint {
     label: string;
+    recordedAt: string;
     target: number;
     actual: number;
+}
+
+export interface PortfolioVault {
+    id: string;
+    name: string;
+    tvl: number;
+    currentApy: number;
+    latestPps: number | null;
+    observations: number;
+    measurementDays: number;
+    latestRecordedAt: string | null;
+    blockNumber: number | null;
+    status: 'review' | 'ready' | 'collecting' | 'no-data';
+    driftPercent: number | null;
 }
 
 export interface FlaggedVault {
@@ -61,6 +76,11 @@ export interface DashboardData {
     annualizedYieldGapUsd: number;
     analysisCoveragePercent: number;
     latestSnapshotCoveragePercent: number;
+    uniqueObservationDays: number;
+    collectionDays: number;
+    firstSnapshotAt: string | null;
+    estimatedReadyAt: string | null;
+    portfolioVaults: PortfolioVault[];
     flaggedVaults: FlaggedVault[];
     chartVaultName: string | null;
     driftPoints: DriftPoint[];
@@ -98,6 +118,11 @@ const emptyDashboard = (
     annualizedYieldGapUsd: 0,
     analysisCoveragePercent: 0,
     latestSnapshotCoveragePercent: 0,
+    uniqueObservationDays: 0,
+    collectionDays: 0,
+    firstSnapshotAt: null,
+    estimatedReadyAt: null,
+    portfolioVaults: [],
     flaggedVaults: [],
     chartVaultName: null,
     driftPoints: [],
@@ -146,8 +171,9 @@ export function analyzeSnapshotSeries(rows: SnapshotRow[]): VaultAnalysis | null
 
         points.push({
             label: new Date(current.recorded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            target: Math.expm1(expectedLogReturn * 365 / measurementDays) * 100,
-            actual: Math.expm1(actualLogReturn * 365 / measurementDays) * 100,
+            recordedAt: current.recorded_at,
+            target: Math.expm1(expectedLogReturn) * 100,
+            actual: Math.expm1(actualLogReturn) * 100,
         });
     }
 
@@ -246,6 +272,40 @@ export function buildDashboardData(
             .map((snapshot) => snapshot.vault_id)
             .filter((vaultId) => currentVaultIds.has(vaultId)),
     );
+    const firstSnapshot = [...snapshotRows]
+        .sort((a, b) => Date.parse(a.recorded_at) - Date.parse(b.recorded_at))[0];
+    const uniqueObservationDays = new Set(snapshotRows.map((snapshot) => snapshot.recorded_at.slice(0, 10))).size;
+    const collectionDays = firstSnapshot && latestSnapshot
+        ? (Date.parse(latestSnapshot.recorded_at) - Date.parse(firstSnapshot.recorded_at)) / 86_400_000
+        : 0;
+    const estimatedReadyAt = firstSnapshot
+        ? new Date(Date.parse(firstSnapshot.recorded_at) + MINIMUM_ANALYSIS_DAYS * 86_400_000).toISOString()
+        : null;
+    const analysisByVault = new Map(analyzed.map(({ vault, analysis }) => [vault.id, analysis]));
+    const portfolioVaults: PortfolioVault[] = normalizedVaults.map((vault) => {
+        const latest = vault.snapshots[vault.snapshots.length - 1];
+        const first = vault.snapshots[0];
+        const analysis = analysisByVault.get(vault.id);
+        const measurementDays = first && latest
+            ? (Date.parse(latest.recorded_at) - Date.parse(first.recorded_at)) / 86_400_000
+            : 0;
+
+        return {
+            id: vault.id,
+            name: vault.name,
+            tvl: vault.numericTvl,
+            currentApy: vault.apy,
+            latestPps: latest ? Number(latest.price_per_share) : null,
+            observations: vault.snapshots.length,
+            measurementDays,
+            latestRecordedAt: latest?.recorded_at ?? null,
+            blockNumber: latest?.block_number ? Number(latest.block_number) : null,
+            status: analysis
+                ? analysis.driftPercent <= -5 ? 'review' : 'ready'
+                : latest ? 'collecting' : 'no-data',
+            driftPercent: analysis?.driftPercent ?? null,
+        };
+    });
 
     return {
         status: hasSnapshots ? 'live' : 'empty',
@@ -270,6 +330,11 @@ export function buildDashboardData(
         ),
         analysisCoveragePercent: normalizedVaults.length > 0 ? analyzed.length / normalizedVaults.length * 100 : 0,
         latestSnapshotCoveragePercent: normalizedVaults.length > 0 ? latestSnapshotVaults.size / normalizedVaults.length * 100 : 0,
+        uniqueObservationDays,
+        collectionDays,
+        firstSnapshotAt: firstSnapshot?.recorded_at ?? null,
+        estimatedReadyAt,
+        portfolioVaults,
         flaggedVaults,
         chartVaultName: chartCandidate?.vault.name ?? null,
         driftPoints: chartCandidate?.analysis.points ?? [],

@@ -1,4 +1,7 @@
-import { ScanEye } from 'lucide-react';
+'use client';
+
+import { useMemo, useState } from 'react';
+import { TrendingUp } from 'lucide-react';
 import type { DriftPoint } from '@/lib/dashboard';
 
 interface DriftChartProps {
@@ -6,107 +9,137 @@ interface DriftChartProps {
     points: DriftPoint[];
 }
 
-export function DriftChart({ vaultName, points }: DriftChartProps) {
-    if (points.length === 0) {
-        return (
-            <div className="min-h-[360px] flex flex-col items-center justify-center text-center border-[1.5px] border-dashed border-[#D6D6D6]/30 p-8">
-                <ScanEye className="w-8 h-8 text-[#FE5238] mb-4" />
-                <h2 className="text-xl font-black uppercase">Awaiting drift baseline</h2>
-                <p className="font-mono text-xs uppercase text-[#D6D6D6]/60 mt-2 max-w-lg">
-                    At least three valid daily observations spanning seven days are required before realized APY is compared with interval-matched target APY.
-                </p>
-            </div>
-        );
-    }
+type Range = 7 | 14 | 30 | 90;
 
-    const current = points[points.length - 1];
-    const driftPercent = current.target > 0
-        ? ((current.actual - current.target) / current.target) * 100
+const width = 820;
+const height = 300;
+const padding = { top: 24, right: 24, bottom: 42, left: 62 };
+
+export function DriftChart({ vaultName, points }: DriftChartProps) {
+    const [range, setRange] = useState<Range>(30);
+
+    const filtered = useMemo(() => {
+        if (points.length === 0) return [];
+        const latest = Math.max(...points.map((point) => Date.parse(point.recordedAt)));
+        const cutoff = latest - range * 86_400_000;
+        return points.filter((point) => Date.parse(point.recordedAt) >= cutoff);
+    }, [points, range]);
+
+    if (points.length === 0) return null;
+
+    const values = filtered.flatMap((point) => [point.target, point.actual, 0]);
+    const rawMin = Math.min(...values);
+    const rawMax = Math.max(...values);
+    const margin = Math.max(0.05, (rawMax - rawMin) * 0.15);
+    const minValue = rawMin - margin;
+    const maxValue = rawMax + margin;
+    const plotWidth = width - padding.left - padding.right;
+    const plotHeight = height - padding.top - padding.bottom;
+    const x = (index: number) => padding.left + (filtered.length <= 1 ? plotWidth / 2 : index / (filtered.length - 1) * plotWidth);
+    const y = (value: number) => padding.top + (maxValue - value) / (maxValue - minValue) * plotHeight;
+    const line = (key: 'target' | 'actual') => filtered
+        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(index).toFixed(2)} ${y(point[key]).toFixed(2)}`)
+        .join(' ');
+    const gapArea = filtered.length > 1
+        ? `${filtered.map((point, index) => `${x(index)},${y(point.target)}`).join(' ')} ${[...filtered].reverse().map((point, reverseIndex) => {
+            const index = filtered.length - 1 - reverseIndex;
+            return `${x(index)},${y(point.actual)}`;
+        }).join(' ')}`
+        : '';
+    const latestPoint = filtered[filtered.length - 1];
+    const relativeDrift = latestPoint.target > 0
+        ? (latestPoint.actual - latestPoint.target) / latestPoint.target * 100
         : 0;
-    const maxYield = Math.max(0, ...points.flatMap((point) => [point.target, point.actual]));
-    const minYield = Math.min(0, ...points.flatMap((point) => [point.target, point.actual]));
-    const yieldRange = Math.max(1, maxYield - minYield);
-    const zeroPosition = ((0 - minYield) / yieldRange) * 100;
-    const barStyle = (value: number) => ({
-        bottom: `${value >= 0 ? zeroPosition : zeroPosition - (Math.abs(value) / yieldRange) * 100}%`,
-        height: `${(Math.abs(value) / yieldRange) * 100}%`,
-    });
+    const tickValues = Array.from({ length: 5 }, (_, index) => maxValue - index * (maxValue - minValue) / 4);
+    const xLabels = [...new Set([0, Math.floor((filtered.length - 1) / 2), filtered.length - 1])];
 
     return (
-        <div className="w-full flex flex-col h-full text-[#D6D6D6]" role="region" aria-label="Strategy Drift Chart">
+        <section aria-labelledby="performance-chart-title" className="rounded-sm border border-[#C6C8C8] bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.05)] md:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#5E6670]">Performance variance</p>
+                    <h2 id="performance-chart-title" className="mt-1 flex items-center gap-2 text-xl font-black tracking-tight md:text-2xl">
+                        <TrendingUp className="h-5 w-5 text-[#245B8A]" aria-hidden="true" />
+                        Expected vs realized return
+                    </h2>
+                    <p className="mt-1 text-sm text-[#626A72]">{vaultName} · cumulative return from interval-matched observations</p>
+                </div>
+                <div className="flex rounded-sm border border-[#B6B9BA] bg-[#F1F2F2] p-0.5" aria-label="Chart date range">
+                    {([7, 14, 30, 90] as Range[]).map((option) => (
+                        <button
+                            key={option}
+                            type="button"
+                            onClick={() => setRange(option)}
+                            className={`min-w-10 px-2.5 py-1.5 font-mono text-[11px] font-bold ${range === option ? 'bg-[#1E1E1E] text-white' : 'text-[#586169] hover:bg-white'}`}
+                            aria-pressed={range === option}
+                        >
+                            {option}D
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-3 gap-3 border-y border-[#E0E1E1] py-4">
+                <ChartMetric label="Expected" value={`${latestPoint.target.toFixed(3)}%`} className="text-[#245B8A]" />
+                <ChartMetric label="Realized" value={`${latestPoint.actual.toFixed(3)}%`} className="text-[#C4482F]" />
+                <ChartMetric label="Relative drift" value={`${relativeDrift.toFixed(1)}%`} className={relativeDrift <= -5 ? 'text-[#8B2F1D]' : 'text-[#24313B]'} />
+            </div>
+
+            <div className="mt-5 overflow-x-auto">
+                <svg viewBox={`0 0 ${width} ${height}`} className="min-w-[640px] w-full" role="img" aria-labelledby="chart-svg-title chart-svg-description">
+                    <title id="chart-svg-title">Cumulative expected and realized return for {vaultName}</title>
+                    <desc id="chart-svg-description">A line chart comparing expected return based on interval-matched APY with realized on-chain price-per-share growth.</desc>
+                    {tickValues.map((tick) => (
+                        <g key={tick}>
+                            <line x1={padding.left} x2={width - padding.right} y1={y(tick)} y2={y(tick)} stroke="#D9DCDD" strokeWidth="1" />
+                            <text x={padding.left - 10} y={y(tick) + 4} textAnchor="end" fontSize="11" fill="#68717A" fontFamily="monospace">{tick.toFixed(2)}%</text>
+                        </g>
+                    ))}
+                    {gapArea && <polygon points={gapArea} fill="#E8EEF2" opacity="0.75" />}
+                    <path d={line('target')} fill="none" stroke="#245B8A" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+                    <path d={line('actual')} fill="none" stroke="#D25338" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+                    {filtered.map((point, index) => (
+                        <g key={point.recordedAt}>
+                            <circle cx={x(index)} cy={y(point.target)} r="4" fill="white" stroke="#245B8A" strokeWidth="2">
+                                <title>{point.label}: expected {point.target.toFixed(3)}%</title>
+                            </circle>
+                            <circle cx={x(index)} cy={y(point.actual)} r="4" fill="white" stroke="#D25338" strokeWidth="2">
+                                <title>{point.label}: realized {point.actual.toFixed(3)}%</title>
+                            </circle>
+                        </g>
+                    ))}
+                    {xLabels.map((index) => (
+                        <text key={index} x={x(index)} y={height - 13} textAnchor="middle" fontSize="11" fill="#68717A" fontFamily="monospace">
+                            {filtered[index]?.label}
+                        </text>
+                    ))}
+                </svg>
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-5 text-xs text-[#586169]">
+                <span className="inline-flex items-center gap-2"><span className="h-0.5 w-6 bg-[#245B8A]" /> Expected return</span>
+                <span className="inline-flex items-center gap-2"><span className="h-0.5 w-6 bg-[#D25338]" /> Realized PPS return</span>
+                <span className="inline-flex items-center gap-2"><span className="h-3 w-6 bg-[#E8EEF2]" /> Variance</span>
+            </div>
+
             <div className="sr-only">
                 <table>
-                    <caption>{vaultName} strategy drift data</caption>
-                    <thead><tr><th>Date</th><th>Target APY</th><th>Realized APY</th></tr></thead>
-                    <tbody>{points.map((point) => (
-                        <tr key={point.label}><td>{point.label}</td><td>{point.target}%</td><td>{point.actual}%</td></tr>
+                    <caption>Expected and realized cumulative return data</caption>
+                    <thead><tr><th>Date</th><th>Expected return</th><th>Realized return</th></tr></thead>
+                    <tbody>{filtered.map((point) => (
+                        <tr key={point.recordedAt}><td>{point.label}</td><td>{point.target}%</td><td>{point.actual}%</td></tr>
                     ))}</tbody>
                 </table>
             </div>
+        </section>
+    );
+}
 
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
-                <div>
-                    <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                        <ScanEye className="w-6 h-6 text-[#FE5238]" /> Yield Performance
-                    </h2>
-                    <p className="font-mono text-xs uppercase font-bold text-[#D6D6D6]/70 mt-1">
-                        {vaultName}: target vs annualized on-chain PPS growth
-                    </p>
-                </div>
-                <div className="border-[1.5px] border-[#FE5238] p-3 border-dashed">
-                    <div className="font-mono text-xs uppercase font-bold text-[#FE5238] mb-1">Latest observation</div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs font-bold">
-                        <span>Target {current.target.toFixed(2)}%</span>
-                        <span className="text-[#FE6A54]">Realized {current.actual.toFixed(2)}%</span>
-                    </div>
-                    <div className="text-2xl font-black text-[#FE5238] tracking-tighter mt-2">{driftPercent.toFixed(1)}% drift</div>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs font-bold uppercase" aria-hidden="true">
-                <span className="inline-flex items-center gap-2">
-                    <span className="h-3 w-3 border-[1.5px] border-[#D6D6D6]" /> Target APY
-                </span>
-                <span className="inline-flex items-center gap-2">
-                    <span className="h-3 w-3 bg-[#FE5238]" /> Realized APY
-                </span>
-            </div>
-
-            <div className="w-full mt-5 overflow-x-auto pb-2" aria-hidden="true">
-                <div className="min-w-max px-1">
-                    <div className="relative flex h-56 items-stretch gap-4 border-y-[1.5px] border-[#D6D6D6]/20">
-                        <div
-                            className="absolute inset-x-0 z-20 border-t-[1.5px] border-dashed border-[#D6D6D6]/70"
-                            style={{ bottom: `${zeroPosition}%` }}
-                        >
-                            <span className="absolute left-0 -translate-y-full bg-[#1E1E1E] pr-2 font-mono text-xs font-bold text-[#D6D6D6]">
-                                0% baseline
-                            </span>
-                        </div>
-                        {points.map((point) => (
-                            <div key={point.label} className="relative z-10 h-full w-24 shrink-0">
-                                <div
-                                    style={barStyle(point.target)}
-                                    className="absolute left-[26px] w-4 min-h-px border-[1.5px] border-[#D6D6D6] bg-[#1E1E1E]"
-                                />
-                                <div
-                                    style={barStyle(point.actual)}
-                                    className="absolute right-[26px] w-4 min-h-px bg-[#FE5238]"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex gap-4 pt-3">
-                        {points.map((point) => (
-                            <div key={point.label} className="w-24 shrink-0 text-center font-mono text-xs font-bold">
-                                <div className="text-[#D6D6D6]">{point.label}</div>
-                                <div className="mt-2 text-[#D6D6D6]/80">T {point.target.toFixed(2)}%</div>
-                                <div className="text-[#FE6A54]">R {point.actual.toFixed(2)}%</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+function ChartMetric({ label, value, className }: { label: string; value: string; className: string }) {
+    return (
+        <div>
+            <div className="font-mono text-[10px] font-bold uppercase tracking-wide text-[#68717A]">{label}</div>
+            <div className={`mt-1 font-mono text-base font-bold tabular-nums md:text-lg ${className}`}>{value}</div>
         </div>
     );
 }
