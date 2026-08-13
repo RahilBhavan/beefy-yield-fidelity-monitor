@@ -15,7 +15,7 @@ export default defineConfig({
         { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
     ],
     webServer: {
-        command: 'npm run dev -- --port 3100',
+        command: 'NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run dev -- --port 3100',
         url: 'http://localhost:3100',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

@@ -46,6 +46,14 @@ describe('drift analysis', () => {
         expect(result.quality).toBe('ready');
         expect(result.flaggedVaults).toHaveLength(1);
         expect(result.flaggedVaults[0].driftPercent).toBeCloseTo(-100, 8);
+        expect(result.analysisCoveragePercent).toBe(100);
+        expect(result.latestSnapshotCoveragePercent).toBe(100);
+        expect(result.analyzedTvl).toBe(1_000);
+        expect(result.underperformingTvl).toBe(1_000);
+        expect(result.portfolioExpectedApy).toBeCloseTo(0.1, 8);
+        expect(result.portfolioActualApy).toBeCloseTo(0, 8);
+        expect(result.annualizedYieldGapUsd).toBeCloseTo(100, 8);
+        expect(result.flaggedVaults[0].annualizedYieldGapUsd).toBeCloseTo(100, 8);
     });
 
     it('does not analyze short or incomplete histories', () => {

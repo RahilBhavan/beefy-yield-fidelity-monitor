@@ -37,6 +37,8 @@ export interface FlaggedVault {
     driftPercent: number;
     tvl: number;
     apy: number;
+    actualApy: number;
+    annualizedYieldGapUsd: number;
     observations: number;
     measurementDays: number;
     confidence: 'low' | 'medium' | 'high';
@@ -52,6 +54,13 @@ export interface DashboardData {
     readyVaults: number;
     totalTvl: number;
     weightedApy: number;
+    analyzedTvl: number;
+    underperformingTvl: number;
+    portfolioExpectedApy: number;
+    portfolioActualApy: number;
+    annualizedYieldGapUsd: number;
+    analysisCoveragePercent: number;
+    latestSnapshotCoveragePercent: number;
     flaggedVaults: FlaggedVault[];
     chartVaultName: string | null;
     driftPoints: DriftPoint[];
@@ -82,6 +91,13 @@ const emptyDashboard = (
     readyVaults: 0,
     totalTvl: 0,
     weightedApy: 0,
+    analyzedTvl: 0,
+    underperformingTvl: 0,
+    portfolioExpectedApy: 0,
+    portfolioActualApy: 0,
+    annualizedYieldGapUsd: 0,
+    analysisCoveragePercent: 0,
+    latestSnapshotCoveragePercent: 0,
     flaggedVaults: [],
     chartVaultName: null,
     driftPoints: [],
@@ -198,6 +214,8 @@ export function buildDashboardData(
                 driftPercent: analysis.driftPercent,
                 tvl: vault.numericTvl,
                 apy: analysis.expectedApy,
+                actualApy: analysis.actualApy,
+                annualizedYieldGapUsd: Math.max(0, vault.numericTvl * (analysis.expectedApy - analysis.actualApy)),
                 observations: analysis.observations,
                 measurementDays: analysis.measurementDays,
                 confidence: analysis.confidence,
@@ -213,6 +231,21 @@ export function buildDashboardData(
     const updatedAt = latestSnapshot?.recorded_at ?? null;
     const hasSnapshots = snapshotRows.length > 0;
     const isReady = analyzed.length > 0;
+    const analyzedTvl = analyzed.reduce((sum, { vault }) => sum + vault.numericTvl, 0);
+    const portfolioExpectedApy = analyzedTvl > 0
+        ? analyzed.reduce((sum, { vault, analysis }) => sum + vault.numericTvl * analysis.expectedApy, 0) / analyzedTvl
+        : 0;
+    const portfolioActualApy = analyzedTvl > 0
+        ? analyzed.reduce((sum, { vault, analysis }) => sum + vault.numericTvl * analysis.actualApy, 0) / analyzedTvl
+        : 0;
+    const currentVaultIds = new Set(normalizedVaults.map((vault) => vault.id));
+    const latestSnapshotDate = latestSnapshot?.recorded_at.slice(0, 10);
+    const latestSnapshotVaults = new Set(
+        snapshotRows
+            .filter((snapshot) => snapshot.recorded_at.slice(0, 10) === latestSnapshotDate)
+            .map((snapshot) => snapshot.vault_id)
+            .filter((vaultId) => currentVaultIds.has(vaultId)),
+    );
 
     return {
         status: hasSnapshots ? 'live' : 'empty',
@@ -227,6 +260,16 @@ export function buildDashboardData(
         readyVaults: analyzed.length,
         totalTvl,
         weightedApy,
+        analyzedTvl,
+        underperformingTvl: flaggedVaults.reduce((sum, vault) => sum + vault.tvl, 0),
+        portfolioExpectedApy,
+        portfolioActualApy,
+        annualizedYieldGapUsd: analyzed.reduce(
+            (sum, { vault, analysis }) => sum + vault.numericTvl * (analysis.expectedApy - analysis.actualApy),
+            0,
+        ),
+        analysisCoveragePercent: normalizedVaults.length > 0 ? analyzed.length / normalizedVaults.length * 100 : 0,
+        latestSnapshotCoveragePercent: normalizedVaults.length > 0 ? latestSnapshotVaults.size / normalizedVaults.length * 100 : 0,
         flaggedVaults,
         chartVaultName: chartCandidate?.vault.name ?? null,
         driftPoints: chartCandidate?.analysis.points ?? [],

@@ -19,3 +19,38 @@ export function calculateBreakEven(
         breakEvenDays: Number.isFinite(exactDays) ? Math.ceil(exactDays) : null,
     };
 }
+
+export interface BreakEvenScenario {
+    label: 'Downside' | 'Current' | 'Upside';
+    apy: number;
+    totalGasCostUsd: number;
+    breakEvenDays: number | null;
+}
+
+export function buildBreakEvenScenarios(
+    depositUsd: number,
+    apy: number,
+    entryCostUsd: number,
+    exitCostUsd: number,
+): BreakEvenScenario[] {
+    return [
+        { label: 'Downside', apyMultiplier: 0.75, costMultiplier: 1.5 },
+        { label: 'Current', apyMultiplier: 1, costMultiplier: 1 },
+        { label: 'Upside', apyMultiplier: 1.25, costMultiplier: 0.75 },
+    ].map(({ label, apyMultiplier, costMultiplier }) => {
+        const scenarioApy = apy * apyMultiplier;
+        const result = calculateBreakEven(
+            depositUsd,
+            scenarioApy,
+            entryCostUsd * costMultiplier,
+            exitCostUsd * costMultiplier,
+        );
+
+        return {
+            label: label as BreakEvenScenario['label'],
+            apy: scenarioApy,
+            totalGasCostUsd: result.totalGasCostUsd,
+            breakEvenDays: result.breakEvenDays,
+        };
+    });
+}

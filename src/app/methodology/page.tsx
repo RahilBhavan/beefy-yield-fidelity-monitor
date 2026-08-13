@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'Methodology | Beefy Yield-Fidelity',
+    title: 'Methodology',
     description: 'Data sources, formulas, assumptions, and limitations.',
 };
 
@@ -20,8 +20,12 @@ const sections = [
         body: 'Relative drift is (realized cumulative return − expected cumulative return) ÷ expected cumulative return. A vault is not analyzed until it has at least three valid observations spanning seven days. Confidence rises with longer windows and more observations.',
     },
     {
+        title: 'Portfolio decision metrics',
+        body: 'Portfolio expected and realized APY are weighted by the TVL of vaults that pass the evidence gate. The annualized yield gap is the signed sum of TVL × (expected APY − realized APY). It is an extrapolated comparison, not a forecast or guaranteed dollar loss.',
+    },
+    {
         title: 'Break-even estimate',
-        body: 'Break-even divides estimated entry and exit network costs by the effective daily yield implied by Beefy-reported APY. The default estimate uses representative transaction sizes and Base L1 fee upper bounds; it is not a wallet-specific transaction quote.',
+        body: 'Break-even divides estimated entry and exit network costs by the effective daily yield implied by Beefy-reported APY. Sensitivity scenarios vary APY and fees around the current estimate. The default uses representative transaction sizes and Base L1 fee upper bounds; it is not a wallet-specific transaction quote.',
     },
     {
         title: 'Limitations',

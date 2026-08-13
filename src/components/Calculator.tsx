@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { calculateBreakEven } from '@/lib/yield';
+import { buildBreakEvenScenarios, calculateBreakEven } from '@/lib/yield';
 import Link from 'next/link';
 
 interface Vault {
@@ -33,6 +33,7 @@ interface SourceData {
 export function Calculator() {
     const [deposit, setDeposit] = useState<string>('1000');
     const [selectedVaultId, setSelectedVaultId] = useState<string>('');
+    const [vaultSearch, setVaultSearch] = useState<string>('');
 
     const [vaults, setVaults] = useState<Vault[]>([]);
     const [gasData, setGasData] = useState<GasData | null>(null);
@@ -66,6 +67,14 @@ export function Calculator() {
     }, []);
 
     const selectedVault = useMemo(() => vaults.find(v => v.id === selectedVaultId) || null, [vaults, selectedVaultId]);
+    const filteredVaults = useMemo(() => {
+        const query = vaultSearch.trim().toLowerCase();
+        if (!query) return vaults;
+
+        return vaults.filter((vault) =>
+            [vault.name, vault.id, vault.chain].some((value) => value.toLowerCase().includes(query))
+        );
+    }, [vaults, vaultSearch]);
     const rawDeposit = parseFloat(deposit) || 0;
 
     const calculations = useMemo(() => {
@@ -87,6 +96,16 @@ export function Calculator() {
         };
     }, [selectedVault, gasData, rawDeposit]);
 
+    const scenarios = useMemo(() => {
+        if (!selectedVault || !gasData || rawDeposit <= 0) return [];
+        return buildBreakEvenScenarios(
+            rawDeposit,
+            selectedVault.apy,
+            gasData.entryCostUsd,
+            gasData.exitCostUsd,
+        );
+    }, [selectedVault, gasData, rawDeposit]);
+
     const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
     const formatPercentage = (val: number) => (val * 100).toFixed(2) + '%';
     const formatTvl = (val: number) => {
@@ -94,11 +113,29 @@ export function Calculator() {
         if (val > 1e3) return `$${(val / 1e3).toFixed(1)}K`;
         return `$${val.toFixed(0)}`;
     };
+    const formatTimestamp = (value: string) => new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short',
+    }).format(new Date(value));
 
     if (isLoading) {
         return (
-            <div className="w-full h-[500px] flex items-center justify-center font-mono text-[#FE5238] uppercase text-sm tracking-widest animate-pulse">
-                Initializing.Systems()
+            <div
+                className="grid min-h-[500px] grid-cols-1 border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E] md:grid-cols-2"
+                aria-busy="true"
+                aria-live="polite"
+            >
+                <div className="flex flex-col gap-8 border-b-[1.5px] border-[#D6D6D6]/30 bg-[#2A2A2A] p-8 md:border-b-0 md:border-r-[1.5px]">
+                    <div className="h-24 animate-pulse bg-[#D6D6D6]/10" aria-hidden="true" />
+                    <div className="min-h-64 flex-1 animate-pulse bg-[#D6D6D6]/10" aria-hidden="true" />
+                </div>
+                <div className="flex min-h-[320px] items-center justify-center p-8 font-mono text-sm text-[#FE5238]">
+                    <p role="status">Loading current vault rates and network fee estimates…</p>
+                </div>
             </div>
         );
     }
@@ -139,8 +176,7 @@ export function Calculator() {
                             type="number"
                             value={deposit}
                             onChange={(e) => setDeposit(e.target.value)}
-                            className="w-full bg-[#1E1E1E] border-[1.5px] border-[#D6D6D6]/30 px-10 py-4 text-3xl font-mono text-[#FE5238] focus:outline-none focus:border-[#FE5238] transition-colors rounded-none placeholder:text-[#1e1e1e]"
-                            placeholder="0.00"
+                            className="w-full bg-[#1E1E1E] border-[1.5px] border-[#D6D6D6]/60 px-10 py-4 text-3xl font-mono text-[#FE5238] focus:outline-none focus:border-[#FE5238] transition-colors rounded-none"
                             min="0"
                             step="any"
                         />
@@ -150,30 +186,48 @@ export function Calculator() {
                 <div className="flex-1 flex flex-col min-h-0">
                     <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 flex items-center justify-between" id="vault-list-label">
                         <span>[SELECT] Target Vault</span>
-                        <span className="px-2 py-0.5 border border-[#FE5238] text-[#FE5238] text-[10px]">BASE/L2</span>
+                        <span className="px-2 py-0.5 border border-[#FF765F] text-[#FF765F] text-xs">BASE/L2</span>
                     </div>
-                    <div className="flex-1 overflow-y-auto max-h-[250px] border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]" role="listbox" aria-labelledby="vault-list-label">
-                        {vaults.slice(0, 10).map((vault) => (
-                            <button
-                                key={vault.id}
-                                role="option"
-                                aria-selected={selectedVaultId === vault.id}
-                                onClick={() => setSelectedVaultId(vault.id)}
-                                className={`w-full flex items-center justify-between px-4 py-3 border-b border-[#D6D6D6]/10 text-left transition-colors ${selectedVaultId === vault.id
-                                    ? 'bg-[#EBEBEB] text-[#1E1E1E]'
-                                    : 'text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
-                                    }`}
-                            >
-                                <div>
-                                    <div className={`font-bold font-sans ${selectedVaultId === vault.id ? 'text-[#1E1E1E]' : ''}`}>{vault.name}</div>
-                                    <div className="text-[10px] font-mono opacity-80 uppercase">TVL: {formatTvl(vault.tvl)}</div>
-                                </div>
-                                <div className={`font-mono font-bold ${selectedVaultId === vault.id ? 'text-[#FE5238]' : ''}`}>
-                                    {formatPercentage(vault.apy)}
-                                </div>
-                            </button>
+                    <label htmlFor="vault-search" className="sr-only">Search vaults</label>
+                    <input
+                        id="vault-search"
+                        type="search"
+                        value={vaultSearch}
+                        onChange={(event) => setVaultSearch(event.target.value)}
+                        placeholder="Search by vault or chain"
+                        className="mb-2 w-full rounded-none border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E] px-4 py-3 font-mono text-sm text-[#EBEBEB] placeholder:text-[#AFAFAF] focus:border-[#FE5238] focus:outline-none"
+                    />
+                    <p className="mb-2 font-mono text-xs text-[#D6D6D6]" aria-live="polite">
+                        Showing {filteredVaults.length} of {vaults.length} vaults
+                    </p>
+                    <ul className="flex-1 overflow-y-auto max-h-[250px] border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]" aria-labelledby="vault-list-label">
+                        {filteredVaults.map((vault) => (
+                            <li key={vault.id}>
+                                <button
+                                    type="button"
+                                    aria-pressed={selectedVaultId === vault.id}
+                                    onClick={() => setSelectedVaultId(vault.id)}
+                                    className={`w-full flex items-center justify-between px-4 py-3 border-b border-[#D6D6D6]/10 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#FE5238] ${selectedVaultId === vault.id
+                                        ? 'bg-[#EBEBEB] text-[#1E1E1E]'
+                                        : 'text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
+                                        }`}
+                                >
+                                    <span>
+                                        <span className={`block font-bold font-sans ${selectedVaultId === vault.id ? 'text-[#1E1E1E]' : ''}`}>{vault.name}</span>
+                                        <span className="block text-xs font-mono opacity-80 uppercase">TVL: {formatTvl(vault.tvl)}</span>
+                                    </span>
+                                    <span className={`font-mono font-bold ${selectedVaultId === vault.id ? 'text-[#A82A18]' : ''}`}>
+                                        {formatPercentage(vault.apy)}
+                                    </span>
+                                </button>
+                            </li>
                         ))}
-                    </div>
+                        {filteredVaults.length === 0 && (
+                            <li className="px-4 py-8 text-center font-mono text-sm text-[#D6D6D6]">
+                                No vaults match your search.
+                            </li>
+                        )}
+                    </ul>
                 </div>
 
             </div>
@@ -185,13 +239,18 @@ export function Calculator() {
                     <div className="flex flex-col h-full justify-between">
                         <div className="w-full mb-8">
                             <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-2 border-b-[1.5px] border-[#D6D6D6]/30 pb-2">
-                                [OUTPUT] Fidelity Forecast
+                                Break-even estimate
                             </div>
 
                             <div className="mt-8 flex flex-col items-center justify-center text-center">
-                                <p className="font-mono text-xs uppercase text-zinc-500 mb-2">Break-Even Point</p>
+                                <p className="font-mono text-xs uppercase text-[#AFAFAF] mb-2">Estimated time to recover fees</p>
+                                <p className="sr-only" role="status" aria-live="polite">
+                                    {calculations.willNeverBreakEven
+                                        ? 'No break-even is projected at the current deposit and APY.'
+                                        : `Estimated time to recover fees: ${calculations.breakEvenDays} days.`}
+                                </p>
                                 {calculations.willNeverBreakEven ? (
-                                    <div className="text-4xl lg:text-5xl font-black tracking-tighter text-[#FE5238]">NEVER_YIELD</div>
+                                    <div className="text-4xl lg:text-5xl font-black tracking-tighter text-[#FE5238]">No break-even</div>
                                 ) : (
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-7xl lg:text-8xl font-black tracking-tighter text-[#EBEBEB]">{calculations.breakEvenDays}</span>
@@ -203,45 +262,75 @@ export function Calculator() {
 
                         <div className="w-full font-mono text-xs uppercase font-bold text-[#D6D6D6] space-y-3 mt-auto">
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
-                                <span>Daily ROI Rate</span>
+                                <span>Estimated daily earnings</span>
                                 <span className="text-green-500">+{formatCurrency(calculations.dailyYield)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
-                                <span>Estimated Entry Fee</span>
-                                <span className="text-[#FE5238] opacity-80">-{formatCurrency(calculations.gasEntry)}</span>
+                                <span>Estimated deposit fee</span>
+                                <span className="text-[#FE5238]">-{formatCurrency(calculations.gasEntry)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
-                                <span>Estimated Exit Fee</span>
-                                <span className="text-[#FE5238] opacity-80">-{formatCurrency(calculations.gasExit)}</span>
+                                <span>Estimated withdrawal fee</span>
+                                <span className="text-[#FE5238]">-{formatCurrency(calculations.gasExit)}</span>
                             </div>
 
                             <div className="pt-2 flex justify-between bg-[#EBEBEB] text-[#1E1E1E] p-2">
-                                <span>Total Friction</span>
-                                <span className="font-black text-[#FE5238]">{formatCurrency(calculations.totalGasCost)}</span>
+                                <span>Total estimated fees</span>
+                                <span className="font-black text-[#A82A18]">{formatCurrency(calculations.totalGasCost)}</span>
                             </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <h3 className="mb-3 font-mono text-xs font-bold uppercase text-[#D6D6D6]">Sensitivity analysis</h3>
+                            <div
+                                className="overflow-x-auto border border-[#D6D6D6]/30"
+                                tabIndex={0}
+                                role="region"
+                                aria-label="Break-even sensitivity table"
+                            >
+                                <table className="w-full min-w-[420px] font-mono text-xs uppercase text-left">
+                                    <caption className="sr-only">Break-even sensitivity under downside, current, and upside assumptions</caption>
+                                    <thead className="bg-[#EBEBEB] text-[#1E1E1E]">
+                                        <tr><th className="p-2">Scenario</th><th className="p-2">APY</th><th className="p-2">Total fees</th><th className="p-2 text-right">Break-even</th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#D6D6D6]/20">
+                                        {scenarios.map((scenario) => (
+                                            <tr key={scenario.label} className={scenario.label === 'Current' ? 'text-[#FE5238]' : ''}>
+                                                <td className="p-2 font-bold">{scenario.label}</td>
+                                                <td className="p-2">{formatPercentage(scenario.apy)}</td>
+                                                <td className="p-2">{formatCurrency(scenario.totalGasCostUsd)}</td>
+                                                <td className="p-2 text-right">{scenario.breakEvenDays === null ? 'N/A' : `${scenario.breakEvenDays} days`}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p className="mt-2 font-mono text-xs text-[#D6D6D6]/65">
+                                Downside assumes 25% lower APY and 50% higher fees; upside assumes 25% higher APY and 25% lower fees.
+                            </p>
                         </div>
 
                         {(calculations.breakEvenDays ?? 0) > 30 && !calculations.willNeverBreakEven && (
                             <div className="mt-6 border-[1.5px] border-[#FE5238] p-3 flex gap-3 text-[#FE5238] items-start bg-[#FE5238]/10">
                                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                                <p className="font-mono text-[10px] uppercase font-bold leading-tight">
-                                    Warning Override: Deposit density insufficient to offset systemic gas friction inside 30 cycles. Adjust input loadout.
+                                <p className="font-mono text-xs uppercase font-bold leading-tight">
+                                    At this deposit size, estimated earnings may take more than 30 days to cover deposit and withdrawal fees.
                                 </p>
                             </div>
                         )}
 
                         {gasData && (
-                            <p className="mt-4 font-mono text-[10px] leading-relaxed uppercase text-[#D6D6D6]/50">
-                                Estimate as of {new Date(gasData.estimatedAt).toLocaleTimeString()}. {gasData.assumptions}
-                                {' '}Beefy-reported APY already reflects its stated performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
-                                {sourceData && <> Market data fetched {new Date(sourceData.beefyFetchedAt).toLocaleTimeString()} on chain {sourceData.chainId}.</>}
+                            <p className="mt-4 font-mono text-xs leading-relaxed text-[#D6D6D6]/75">
+                                Network fee estimate updated {formatTimestamp(gasData.estimatedAt)}. {gasData.assumptions}
+                                {' '}The displayed APY already includes Beefy&apos;s reported performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
+                                {sourceData && <> Vault rates updated {formatTimestamp(sourceData.beefyFetchedAt)} for chain {sourceData.chainId}.</>}
                                 {' '}<Link href="/methodology" className="underline hover:text-[#FE5238]">Methodology and limitations.</Link>
                             </p>
                         )}
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center font-mono text-[#D6D6D6]/50 text-xs px-10 text-center border-[1.5px] border-dashed border-[#D6D6D6]/20">
-                        Awaiting variable assignments to execute forecast logic.
+                        Choose a vault and enter a deposit greater than $0 to see an estimate.
                     </div>
                 )}
             </div>
