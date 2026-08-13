@@ -6,7 +6,7 @@ An independent DeFi observability dashboard that compares Beefy vault headline y
 
 > Independent portfolio project by [Rahil Bhavan](https://github.com/RahilBhavan). Not affiliated with or endorsed by Beefy.
 
-**[Live dashboard](https://yield.rahilbhavan.com/dashboard)** · **[Project case study](docs/CASE_STUDY.md)** · **[Methodology](https://yield.rahilbhavan.com/methodology)**
+**[Live dashboard](https://yield.rahilbhavan.com/dashboard)** · **[Complete project guide](docs/PROJECT_GUIDE.md)** · **[Project case study](docs/CASE_STUDY.md)** · **[Methodology](https://yield.rahilbhavan.com/methodology)**
 
 ## Why it matters
 
@@ -63,7 +63,7 @@ expected log return += ln(1 + observed APY) × interval days / 365
 relative drift = (realized return − expected return) / expected return
 ```
 
-The expected APY comes from the earlier observation in each interval. A result is shown only after three valid observations span at least seven days. See the in-app [methodology page](http://localhost:3000/methodology) for assumptions and limitations.
+The expected APY comes from the earlier observation in each interval. A result is shown only after three valid observations span at least seven days. See the live [methodology page](https://yield.rahilbhavan.com/methodology) for assumptions and limitations.
 
 ## Run locally
 
