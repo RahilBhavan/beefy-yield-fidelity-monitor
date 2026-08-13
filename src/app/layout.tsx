@@ -46,7 +46,7 @@ export default function RootLayout({
             <div className="w-full min-h-20 flex flex-col sm:flex-row sm:items-stretch">
 
               <div className="flex items-center px-6 md:px-10 py-4 sm:py-0 sm:border-r-[1px] border-[#1E1E1E] sm:flex-1">
-                <Link href="/" className="flex items-center gap-3" aria-label="Yield/Fidelity home">
+                <Link href="/" className="flex min-h-11 items-center gap-3" aria-label="Yield/Fidelity home">
                   <div className="w-10 h-10 border-[1.5px] border-[#1E1E1E] flex items-center justify-center font-bold text-lg bg-[#FE5238] text-[#1E1E1E] rotate-3 hover:-rotate-3 transition-transform">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
                       <path d="M10 4L2 12L10 20M14 4L22 12L14 20" />
@@ -96,7 +96,7 @@ export default function RootLayout({
             <div className="md:pl-10 flex flex-col justify-between">
               <div className="font-mono text-xs uppercase font-bold mb-4">Project</div>
               <a href="https://github.com/RahilBhavan/beefy-yield-fidelity-monitor" target="_blank" rel="noreferrer" className="font-sans text-sm font-medium underline hover:text-[#A82A18]">View source on GitHub</a>
-              <p className="mt-3 font-mono text-[10px] uppercase opacity-80">Independent project. Not affiliated with Beefy.</p>
+              <p className="mt-3 font-mono text-[10px] uppercase opacity-70">Independent project. Not affiliated with Beefy.</p>
             </div>
           </footer>
         </div>

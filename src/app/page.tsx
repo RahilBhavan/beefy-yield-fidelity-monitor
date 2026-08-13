@@ -45,20 +45,20 @@ export default function Home() {
 
       <section aria-label="Project facts" className="grid grid-cols-2 lg:grid-cols-4 bg-[#1E1E1E] text-[#D6D6D6] border-b border-[#1E1E1E]">
         {proofPoints.map((point) => (
-          <div key={point.label} className="p-5 md:p-7 border-r border-b lg:border-b-0 border-[#D6D6D6]/25 last:border-r-0">
+          <div key={point.label} className="p-5 md:p-7 border-r border-b lg:border-b-0 border-[#D6D6D6]/15 last:border-r-0">
             <div className="text-2xl md:text-3xl font-black tracking-tighter text-[#FE5238]">{point.value}</div>
-            <div className="font-mono text-[10px] uppercase font-bold tracking-wider opacity-60 mt-1">{point.label}</div>
+            <div className="font-mono text-[10px] uppercase font-bold tracking-wider text-[#D6D6D6]/70 mt-1">{point.label}</div>
           </div>
         ))}
       </section>
 
       <section id="calculator" className="w-full border-t-[1px] border-[#1E1E1E] bg-[#1E1E1E] text-[#D6D6D6]">
         <div className="grid grid-cols-1 lg:grid-cols-3">
-          <div className="border-b-[1px] lg:border-b-0 lg:border-r-[1px] border-[#D6D6D6]/30 p-8 md:p-12 lg:flex lg:flex-col lg:justify-between">
+          <div className="border-b-[1px] lg:border-b-0 lg:border-r-[1px] border-[#D6D6D6]/15 p-8 md:p-12 lg:flex lg:flex-col lg:justify-between">
             <div>
               <div className="font-mono text-xs text-[#FE5238] uppercase font-bold tracking-widest mb-4">Live planning tool</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Break-Even<br />Analyzer</h2>
-              <p className="font-mono text-sm leading-relaxed text-[#D6D6D6]/75">
+              <p className="font-mono text-sm leading-relaxed text-[#D6D6D6]/70">
                 Enter a deposit amount and choose a vault. The model compares effective daily yield with estimated entry and exit costs to calculate a break-even horizon.
               </p>
             </div>
@@ -82,21 +82,21 @@ export default function Home() {
         <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
           <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center" aria-hidden="true">01</div>
           <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Real-Time Gas Fares</h2>
-          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-75">
             Combines current Base execution fees, L1 fee upper bounds, and explicit transaction-size assumptions.
           </p>
         </div>
         <div className="p-8 border-b-[1px] md:border-b-0 md:border-r-[1px] border-[#1E1E1E] group hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
           <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center" aria-hidden="true">02</div>
           <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Drift Analysis</h2>
-          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-75">
             Compares projected APY against verified Price-Per-Share (PPS) chronological growth points.
           </p>
         </div>
         <div className="p-8 group bg-[#D6D6D6] hover:bg-[#1E1E1E] hover:text-[#D6D6D6] transition-colors">
           <div className="w-12 h-12 border-[1.5px] border-current rounded-full mb-8 flex items-center justify-center bg-[#FE5238] text-[#1E1E1E]" aria-hidden="true">B</div>
           <h2 className="text-2xl font-bold tracking-tight mb-4 group-hover:text-[#FE5238]">Beefy Ecosystem</h2>
-          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-80">
+          <p className="font-mono text-xs uppercase leading-relaxed font-bold opacity-75">
             Directly integrates with the live API to dynamically monitor vault performance over intervals.
           </p>
         </div>

@@ -33,24 +33,24 @@ export interface BaseVault {
 
 type JsonRecord = Record<string, unknown>;
 
-async function fetchJson<T>(path: string): Promise<T> {
+export async function fetchJson<T>(path: string): Promise<T> {
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= 3; attempt += 1) {
+        let response: Response | null = null;
         try {
-            const response = await fetch(`${BEEFY_API_URL}${path}`, {
+            response = await fetch(`${BEEFY_API_URL}${path}`, {
                 cache: 'no-store',
                 signal: AbortSignal.timeout(8_000),
             });
-
-            if (!response.ok) {
-                const error = new Error(`Beefy ${path} returned ${response.status}`);
-                if (response.status < 500 && response.status !== 429) throw error;
-                lastError = error;
-            } else {
-                return response.json() as Promise<T>;
-            }
         } catch (error) {
+            lastError = error;
+        }
+
+        if (response) {
+            if (response.ok) return response.json() as Promise<T>;
+            const error = new Error(`Beefy ${path} returned ${response.status}`);
+            if (response.status < 500 && response.status !== 429) throw error;
             lastError = error;
         }
 

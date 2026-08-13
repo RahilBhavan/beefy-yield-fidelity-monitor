@@ -70,6 +70,79 @@ describe('drift analysis', () => {
         expect(result.driftPoints.at(-1)?.actual).toBe(0);
     });
 
+    it('keeps portfolio aggregates finite when vault rows carry malformed numbers', () => {
+        const result = buildDashboardData(
+            [
+                {
+                    id: 'vault-1',
+                    name: 'Vault One',
+                    chain: 'base',
+                    target_apy: 'not-a-number',
+                    tvl: 'NaN',
+                    updated_at: '2026-01-09T00:00:00.000Z',
+                },
+                {
+                    id: 'vault-2',
+                    name: 'Vault Two',
+                    chain: 'base',
+                    target_apy: 0.2,
+                    tvl: 500,
+                    updated_at: '2026-01-09T00:00:00.000Z',
+                },
+            ],
+            [],
+        );
+
+        expect(result.totalTvl).toBe(500);
+        expect(result.weightedApy).toBeCloseTo(0.2, 8);
+        expect(result.portfolioVaults[0].tvl).toBe(0);
+        expect(result.portfolioVaults[0].currentApy).toBe(0);
+    });
+
+    it('excludes intervals touching non-positive PPS observations', () => {
+        const analysis = analyzeSnapshotSeries([
+            snapshot('2026-01-01T00:00:00.000Z', 1),
+            snapshot('2026-01-05T00:00:00.000Z', 0),
+            snapshot('2026-01-09T00:00:00.000Z', 1),
+            snapshot('2026-01-17T00:00:00.000Z', 1),
+            snapshot('2026-01-25T00:00:00.000Z', 1),
+        ]);
+
+        expect(analysis).not.toBeNull();
+        expect(analysis?.measurementDays).toBe(16);
+        expect(analysis?.points).toHaveLength(2);
+    });
+
+    it('reports block number 0 as 0, not null', () => {
+        const result = buildDashboardData(
+            [{
+                id: 'vault-1',
+                name: 'Vault One',
+                chain: 'base',
+                target_apy: 0.1,
+                tvl: 1_000,
+                updated_at: '2026-01-09T00:00:00.000Z',
+            }],
+            [
+                { ...snapshot('2026-01-01T00:00:00.000Z', 1), block_number: '0' },
+                { ...snapshot('2026-01-05T00:00:00.000Z', 1), block_number: '0' },
+                { ...snapshot('2026-01-09T00:00:00.000Z', 1), block_number: 0 },
+            ],
+        );
+
+        expect(result.latestBlockNumber).toBe(0);
+        expect(result.portfolioVaults[0].blockNumber).toBe(0);
+        expect(result.flaggedVaults[0].blockNumber).toBe(0);
+    });
+
+    it('excludes drift when the expected return is vanishingly small', () => {
+        expect(analyzeSnapshotSeries([
+            snapshot('2026-01-01T00:00:00.000Z', 1, 1e-9),
+            snapshot('2026-01-05T00:00:00.000Z', 1.001, 1e-9),
+            snapshot('2026-01-09T00:00:00.000Z', 1.002, 1e-9),
+        ])).toBeNull();
+    });
+
     it('does not analyze short or incomplete histories', () => {
         expect(analyzeSnapshotSeries([
             snapshot('2026-01-01T00:00:00.000Z', 1),

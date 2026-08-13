@@ -1,5 +1,27 @@
-import { describe, expect, it } from 'vitest';
-import { selectActiveBaseVaults } from '@/lib/beefy';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fetchJson, selectActiveBaseVaults } from '@/lib/beefy';
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('fetchJson', () => {
+    it('fails fast on non-retryable 4xx responses', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('missing', { status: 404 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(fetchJson('/vaults')).rejects.toThrow('Beefy /vaults returned 404');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries 5xx responses and returns the eventual success', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(new Response('down', { status: 500 }))
+            .mockResolvedValueOnce(Response.json({ ok: true }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(fetchJson('/vaults')).resolves.toEqual({ ok: true });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+});
 
 describe('selectActiveBaseVaults', () => {
     it('uses Base chain-id TVL, excludes retired vaults, and sorts by TVL', () => {

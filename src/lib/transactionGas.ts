@@ -20,11 +20,12 @@ export async function estimatePreparedTransaction(
     const oracle = new Contract(baseChain.gasOracleAddress, GAS_ORACLE_ABI, provider);
     const transactionBytes = BigInt(Math.ceil((transaction.data.length - 2) / 2) + 160);
 
-    const gasLimit = await withRpcRetry(() => provider.estimateGas(transaction));
-    const feeData = await withRpcRetry(() => provider.getFeeData());
-    const l1FeeWei = await withRpcRetry(
-        () => oracle.getL1FeeUpperBound(transactionBytes) as Promise<bigint>,
-    );
+    const [gasLimit, feeData, l1FeeWei, blockNumber] = await Promise.all([
+        withRpcRetry(() => provider.estimateGas(transaction)),
+        withRpcRetry(() => provider.getFeeData()),
+        withRpcRetry(() => oracle.getL1FeeUpperBound(transactionBytes) as Promise<bigint>),
+        withRpcRetry(() => provider.getBlockNumber()),
+    ]);
     if (!feeData.gasPrice) throw new Error('Base RPC did not return a gas price');
 
     const l2FeeWei = gasLimit * feeData.gasPrice;
@@ -37,7 +38,7 @@ export async function estimatePreparedTransaction(
         totalFeeWei: totalFeeWei.toString(),
         totalFeeUsd: Number(formatEther(totalFeeWei)) * ethPriceUsd,
         transactionBytes: Number(transactionBytes),
-        blockNumber: await withRpcRetry(() => provider.getBlockNumber()),
+        blockNumber,
         estimatedAt: new Date().toISOString(),
     };
 }

@@ -50,13 +50,11 @@ async function loadBaseGasNetworkSnapshot(): Promise<GasNetworkSnapshot> {
     const provider = createChainProvider(baseChain);
     const oracle = new Contract(baseChain.gasOracleAddress, GAS_ORACLE_ABI, provider);
 
-    const feeData = await withRpcRetry(() => provider.getFeeData());
-    const entryL1FeeWei = await withRpcRetry(
-        () => oracle.getL1FeeUpperBound(ENTRY_TRANSACTION_BYTES) as Promise<bigint>,
-    );
-    const exitL1FeeWei = await withRpcRetry(
-        () => oracle.getL1FeeUpperBound(EXIT_TRANSACTION_BYTES) as Promise<bigint>,
-    );
+    const [feeData, entryL1FeeWei, exitL1FeeWei] = await Promise.all([
+        withRpcRetry(() => provider.getFeeData()),
+        withRpcRetry(() => oracle.getL1FeeUpperBound(ENTRY_TRANSACTION_BYTES) as Promise<bigint>),
+        withRpcRetry(() => oracle.getL1FeeUpperBound(EXIT_TRANSACTION_BYTES) as Promise<bigint>),
+    ]);
 
     if (!feeData.gasPrice) {
         throw new Error('Base RPC did not return a gas price');

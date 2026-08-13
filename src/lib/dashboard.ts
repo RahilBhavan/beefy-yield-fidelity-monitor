@@ -3,6 +3,11 @@ import { createSupabaseReader, hasSupabaseReaderConfiguration } from '@/lib/supa
 const MINIMUM_ANALYSIS_DAYS = 7;
 const MINIMUM_OBSERVATIONS = 3;
 
+function toFiniteNumber(value: unknown, fallback = 0): number {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : fallback;
+}
+
 interface VaultRow {
     id: string;
     name: string;
@@ -183,7 +188,8 @@ export function analyzeSnapshotSeries(rows: SnapshotRow[]): VaultAnalysis | null
 
     const actualReturn = Math.expm1(actualLogReturn);
     const expectedReturn = Math.expm1(expectedLogReturn);
-    if (!Number.isFinite(actualReturn) || !Number.isFinite(expectedReturn) || expectedReturn <= 0) {
+    // Near-zero expected return turns drift into a ratio of PPS noise, so it is as meaningless as a negative one.
+    if (!Number.isFinite(actualReturn) || !Number.isFinite(expectedReturn) || expectedReturn < 1e-6) {
         return null;
     }
 
@@ -216,8 +222,8 @@ export function buildDashboardData(
 
     const normalizedVaults = vaultRows.map((vault) => ({
         ...vault,
-        apy: Number(vault.target_apy ?? 0),
-        numericTvl: Number(vault.tvl ?? 0),
+        apy: toFiniteNumber(vault.target_apy),
+        numericTvl: toFiniteNumber(vault.tvl),
         snapshots: snapshotsByVault.get(vault.id) ?? [],
     }));
     const totalTvl = normalizedVaults.reduce((sum, vault) => sum + vault.numericTvl, 0);
@@ -245,14 +251,16 @@ export function buildDashboardData(
                 observations: analysis.observations,
                 measurementDays: analysis.measurementDays,
                 confidence: analysis.confidence,
-                blockNumber: latest?.block_number ? Number(latest.block_number) : null,
+                blockNumber: latest?.block_number != null ? Number(latest.block_number) : null,
             };
         })
         .sort((a, b) => a.driftPercent - b.driftPercent);
 
     const chartCandidate = [...analyzed]
         .sort((a, b) => b.vault.numericTvl - a.vault.numericTvl)[0];
-    const latestSnapshot = [...snapshotRows]
+    const currentVaultIds = new Set(normalizedVaults.map((vault) => vault.id));
+    const activeSnapshotRows = snapshotRows.filter((snapshot) => currentVaultIds.has(snapshot.vault_id));
+    const latestSnapshot = [...activeSnapshotRows]
         .sort((a, b) => Date.parse(b.recorded_at) - Date.parse(a.recorded_at))[0];
     const updatedAt = latestSnapshot?.recorded_at ?? null;
     const hasSnapshots = snapshotRows.length > 0;
@@ -264,15 +272,13 @@ export function buildDashboardData(
     const portfolioActualApy = analyzedTvl > 0
         ? analyzed.reduce((sum, { vault, analysis }) => sum + vault.numericTvl * analysis.actualApy, 0) / analyzedTvl
         : 0;
-    const currentVaultIds = new Set(normalizedVaults.map((vault) => vault.id));
     const latestSnapshotDate = latestSnapshot?.recorded_at.slice(0, 10);
     const latestSnapshotVaults = new Set(
-        snapshotRows
+        activeSnapshotRows
             .filter((snapshot) => snapshot.recorded_at.slice(0, 10) === latestSnapshotDate)
-            .map((snapshot) => snapshot.vault_id)
-            .filter((vaultId) => currentVaultIds.has(vaultId)),
+            .map((snapshot) => snapshot.vault_id),
     );
-    const firstSnapshot = [...snapshotRows]
+    const firstSnapshot = [...activeSnapshotRows]
         .sort((a, b) => Date.parse(a.recorded_at) - Date.parse(b.recorded_at))[0];
     const uniqueObservationDays = new Set(snapshotRows.map((snapshot) => snapshot.recorded_at.slice(0, 10))).size;
     const collectionDays = firstSnapshot && latestSnapshot
@@ -299,7 +305,7 @@ export function buildDashboardData(
             observations: vault.snapshots.length,
             measurementDays,
             latestRecordedAt: latest?.recorded_at ?? null,
-            blockNumber: latest?.block_number ? Number(latest.block_number) : null,
+            blockNumber: latest?.block_number != null ? Number(latest.block_number) : null,
             status: analysis
                 ? analysis.driftPercent <= -5 ? 'review' : 'ready'
                 : latest ? 'collecting' : 'no-data',
@@ -338,7 +344,7 @@ export function buildDashboardData(
         flaggedVaults,
         chartVaultName: chartCandidate?.vault.name ?? null,
         driftPoints: chartCandidate?.analysis.points ?? [],
-        latestBlockNumber: latestSnapshot?.block_number ? Number(latestSnapshot.block_number) : null,
+        latestBlockNumber: latestSnapshot?.block_number != null ? Number(latestSnapshot.block_number) : null,
         latestBlockHash: latestSnapshot?.block_hash ?? null,
         providerLabel: latestSnapshot?.provider_label ?? null,
     };
