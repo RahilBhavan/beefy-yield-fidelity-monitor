@@ -1,4 +1,4 @@
-# Yield/Fidelity: Complete Project Guide
+# Yield/Fidelity project guide
 
 This document explains what Yield/Fidelity does, why it exists, how data moves through the system, how the financial analysis works, and how the project is operated and verified.
 
@@ -11,7 +11,7 @@ Yield/Fidelity is a production financial-analysis application for active Beefy v
 1. How long should a deposit take to recover its estimated entry and exit costs?
 2. Is a vault's realized on-chain price-per-share growth keeping pace with the yield reported during the same period?
 
-The application combines Beefy market data, Base smart-contract reads, transaction-cost estimates, PostgreSQL history, evidence-quality controls, and an analyst-oriented dashboard. The current scope is the 50 largest active Beefy vaults on Base by TVL.
+The application combines Beefy market data, Base smart-contract reads, transaction-cost estimates, PostgreSQL history, evidence-quality controls, and an analyst-oriented dashboard. The collector selects up to 50 of the largest active Beefy vaults on Base by TVL.
 
 The system has two primary user experiences:
 
@@ -266,7 +266,7 @@ The application publishes a vault analysis only when:
 - at least three observations are valid;
 - those observations span at least seven days;
 - consecutive PPS values are positive;
-- the earlier interval APY is finite and greater than `-100%`;
+- the earlier interval APY is finite, greater than `-100%`, and no more than `1,000%` (larger upstream values remain in the export but are excluded from analysis);
 - elapsed interval time is positive; and
 - cumulative expected return is positive and mathematically valid.
 
@@ -364,7 +364,7 @@ The export endpoint accepts:
 ?vaultId=<vault-id>
 ```
 
-It returns at most 10,000 valid observations and escapes CSV cells safely.
+It pages through valid observations from the rolling 90-day window and escapes CSV cells safely.
 
 ## 13. Health and operations
 
@@ -375,9 +375,10 @@ It returns at most 10,000 valid observations and escapes CSV cells safely.
 - configured provider count;
 - database configuration state;
 - latest snapshot timestamp and block; and
-- snapshot age in hours.
+- snapshot age in hours;
+- active vault count, valid observations on the latest snapshot date, and coverage percentage.
 
-Health is degraded when data access is not configured, no valid snapshot exists, or the latest snapshot is more than 36 hours old.
+Health is degraded when data access is not configured, no valid snapshot exists, the latest snapshot is more than 36 hours old, or latest-snapshot coverage is below 95%.
 
 The documented service objectives are:
 
@@ -418,7 +419,7 @@ Playwright exercises desktop and mobile calculator, dashboard, exception, method
 
 ### Build and dependency checks
 
-Every push runs lint, unit tests, a production Next.js build, a production-dependency audit, database verification, and browser tests. Live Supabase/RPC integration and load-smoke suites remain opt-in because they require external credentials or target a running deployment.
+Pull requests and pushes to `main` run lint, unit tests, a production Next.js build, a production-dependency audit, database verification, and browser tests. Live Supabase/RPC integration and load-smoke suites remain opt-in because they require external credentials or target a running deployment.
 
 Local commands:
 
@@ -502,4 +503,3 @@ Yield/Fidelity demonstrates the ability to:
 - [Methodology](https://yield.rahilbhavan.com/methodology): public-facing formulas and limitations
 - [Operations runbook](OPERATIONS.md): release, monitoring, incidents, and rollback
 - [Security model](SECURITY.md): credentials, data boundaries, and future authorization requirements
-

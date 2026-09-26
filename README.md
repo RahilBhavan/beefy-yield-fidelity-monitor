@@ -8,6 +8,14 @@ An independent DeFi observability dashboard that compares Beefy vault headline y
 
 **[Live dashboard](https://yield.rahilbhavan.com/dashboard)** · **[Complete project guide](docs/PROJECT_GUIDE.md)** · **[Project case study](docs/CASE_STUDY.md)** · **[Methodology](https://yield.rahilbhavan.com/methodology)**
 
+## Three-minute demo
+
+1. Open the [calculator](https://yield.rahilbhavan.com/), choose a Base vault, and change the deposit amount. Compare the break-even days and sensitivity scenarios.
+2. Open the [dashboard](https://yield.rahilbhavan.com/dashboard). Check the latest snapshot time and coverage before reading the portfolio summary or opening exception review.
+3. Open the [methodology](https://yield.rahilbhavan.com/methodology) and download the [observation CSV](https://yield.rahilbhavan.com/api/export). The export contains the valid observations behind the rolling 90-day analysis window, including block and provider provenance.
+
+The live vault set and metrics change with market data and daily collection. If the dashboard reports stale or incomplete data, treat its historical variance as a review lead rather than a current recommendation. The [case study](docs/CASE_STUDY.md) explains the design and includes resume-ready project descriptions.
+
 ## Why it matters
 
 Yield interfaces usually emphasize a current APY. That number does not tell a user whether transaction costs overwhelm a small position or whether a vault has actually compounded at the advertised rate. Yield/Fidelity turns those questions into two inspectable outputs:
@@ -104,10 +112,10 @@ CI also applies every migration to PostgreSQL 16, runs database invariants, audi
 | --- | --- |
 | `/` | Friction-adjusted break-even calculator |
 | `/dashboard` | Coverage, freshness, and PPS drift |
-| `/dashboard/strategies` | Vaults more than 5% below interval-matched target |
+| `/dashboard/strategies` | Vaults at least 5% below the interval-matched target |
 | `/methodology` | Formulas, provenance, and limitations |
-| `/api/health` | Deployment and data-freshness health |
-| `/api/export` | Reproducible observation export |
+| `/api/health` | Base RPC, data freshness, and snapshot coverage health |
+| `/api/export` | Reproducible export of the dashboard's rolling 90-day observation window |
 | `/api/cron/scrape` | Authenticated, idempotent daily ingestion |
 
 Release checks, freshness objectives, rollback steps, and incident response live in [docs/OPERATIONS.md](docs/OPERATIONS.md). The threat model and secret boundaries are documented in [docs/SECURITY.md](docs/SECURITY.md).
@@ -116,6 +124,6 @@ Release checks, freshness objectives, rollback steps, and incident response live
 
 The current MVP monitors active Beefy vaults on Base. Multi-chain coverage, wallet-specific transaction simulation in the UI, token-price risk, impermanent loss, slippage, bridge costs, taxes, and future APY prediction are outside the present scope. Results are informational and are not financial advice.
 
-The production collector began accumulating the current evidence window in August 2026. Until at least three valid observations span seven days, the dashboard intentionally reports that analysis is in progress instead of publishing a strategy conclusion.
+The production collector began accumulating observations in August 2026. The dashboard publishes variance analysis only for vaults with at least three valid observations spanning seven days. Its recommendation also checks that the latest snapshot is under 36 hours old and covers at least 95% of tracked vaults. Historical APY inputs above 1,000% are retained in the export but excluded from interval analysis as upstream anomalies.
 
 Released under the [MIT License](LICENSE). Yield/Fidelity is an independent project and is not affiliated with or endorsed by Beefy; downstream use remains responsible for applicable third-party names, marks, and data terms.

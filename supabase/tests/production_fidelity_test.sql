@@ -5,6 +5,8 @@ DECLARE
     test_run_id UUID;
     test_claimed BOOLEAN;
     repeated_claim BOOLEAN;
+    retry_run_id UUID;
+    retry_claimed BOOLEAN;
     recorded_count INTEGER;
 BEGIN
     IF to_regclass('public.scrape_runs') IS NULL THEN
@@ -66,6 +68,13 @@ BEGIN
     FROM public.begin_scrape_run('base-test', DATE '2026-01-01');
     IF repeated_claim THEN
         RAISE EXCEPTION 'completed daily run was claimed twice';
+    END IF;
+
+    UPDATE public.scrape_runs SET status = 'failed' WHERE id = test_run_id;
+    SELECT run_id, claimed INTO retry_run_id, retry_claimed
+    FROM public.begin_scrape_run('base-test', DATE '2026-01-01');
+    IF NOT retry_claimed OR retry_run_id <> test_run_id THEN
+        RAISE EXCEPTION 'failed daily run was not reclaimed for retry';
     END IF;
 END;
 $$;

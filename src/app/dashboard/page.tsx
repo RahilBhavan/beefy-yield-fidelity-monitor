@@ -39,18 +39,25 @@ export default async function Dashboard() {
     const freshnessHours = data.updatedAt
         ? Math.max(0, (Date.parse(asOf) - Date.parse(data.updatedAt)) / 3_600_000)
         : null;
+    const isCurrent = freshnessHours !== null
+        && freshnessHours < 36
+        && data.latestSnapshotCoveragePercent >= 95;
 
     const decisionTitle = !hasObservations
         ? 'Restore the data pipeline before drawing portfolio conclusions.'
+        : !isCurrent
+            ? 'Restore snapshot freshness and coverage before reviewing performance.'
         : !isReady
-            ? 'The portfolio is fully covered; performance analysis is still maturing.'
+            ? 'Performance analysis is still maturing.'
             : priorityVault
                 ? `${priorityVault.name} is the highest-priority performance exception.`
                 : 'No analyzed strategy currently breaches the review threshold.';
     const decisionDetail = !hasObservations
         ? data.message
+        : !isCurrent
+            ? `The latest snapshot covers ${data.latestSnapshotCoveragePercent.toFixed(0)}% of tracked vaults and ${freshnessHours === null ? 'has no recorded time' : `was recorded ${relativeAge(data.updatedAt, asOf)} ago`}. The 95% coverage and 36-hour freshness objectives must both pass.`
         : !isReady
-            ? `${data.trackedVaults} vaults have current observations. Continue collection until the three-observation and seven-day controls both pass.`
+            ? `${data.portfolioVaults.filter((vault) => vault.latestRecordedAt).length} vaults have observations. Continue collection until the three-observation and seven-day controls both pass.`
             : priorityVault
                 ? `${data.flaggedVaults.length} ${data.flaggedVaults.length === 1 ? 'vault is' : 'vaults are'} below target, representing ${compactCurrency.format(data.underperformingTvl)} in TVL.`
                 : `${data.readyVaults} vaults pass the evidence gate with no variance below -5%.`;
@@ -75,8 +82,8 @@ export default async function Dashboard() {
                 <div className="mx-auto flex max-w-[1500px] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <div className="flex flex-wrap items-center gap-3">
-                            <StatusChip tone={isReady ? 'settled' : isCollecting ? 'progress' : 'critical'}>
-                                {isReady ? 'Analysis ready' : isCollecting ? 'Collecting baseline' : 'Data unavailable'}
+                            <StatusChip tone={!isCurrent && hasObservations ? 'critical' : isReady ? 'settled' : isCollecting ? 'progress' : 'critical'}>
+                                {!isCurrent && hasObservations ? 'Data needs attention' : isReady ? 'Analysis ready' : isCollecting ? 'Collecting baseline' : 'Data unavailable'}
                             </StatusChip>
                             <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#1E1E1E]/70">Base · Chain 8453</span>
                         </div>
@@ -127,6 +134,8 @@ export default async function Dashboard() {
                             <p className="mt-3 text-sm leading-relaxed text-[#D6D6D6]/70">
                                 {!hasObservations
                                     ? 'Investigate database configuration and ingestion health before presenting performance findings.'
+                                    : !isCurrent
+                                        ? 'Check daily ingestion and latest snapshot coverage before acting on historical variance.'
                                     : !isReady
                                         ? 'Continue daily collection and verify coverage. Reassess automatically when both evidence controls pass.'
                                         : priorityVault

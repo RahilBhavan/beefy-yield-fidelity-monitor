@@ -22,6 +22,13 @@ export default async function Strategies() {
     const data = await getDashboardData();
     const isReady = data.quality === 'ready';
     const isCollecting = data.quality === 'collecting';
+    const asOf = new Date().toISOString();
+    const snapshotAgeHours = data.updatedAt
+        ? (Date.parse(asOf) - Date.parse(data.updatedAt)) / 3_600_000
+        : null;
+    const isCurrent = snapshotAgeHours !== null
+        && snapshotAgeHours < 36
+        && data.latestSnapshotCoveragePercent >= 95;
 
     return (
         <div className="min-h-full bg-[#D6D6D6] text-[#1E1E1E]">
@@ -35,18 +42,23 @@ export default async function Strategies() {
                         <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-[#1E1E1E]/70 md:text-sm">Vaults whose realized PPS return is more than 5% below the interval-matched target.</p>
                     </div>
                     <span className={`self-start inline-flex items-center border-[1.5px] px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide ${isReady ? 'border-[#FE5238] bg-[#FE5238] text-[#1E1E1E]' : isCollecting ? 'border-[#1E1E1E] border-dashed bg-transparent text-[#1E1E1E]' : 'border-[#1E1E1E]/30 border-dotted text-[#1E1E1E]/70'}`}>
-                        {isReady ? `${data.flaggedVaults.length} exceptions` : isCollecting ? 'Collecting baseline' : 'Unavailable'}
+                        {isReady ? isCurrent ? `${data.flaggedVaults.length} exceptions` : 'Historical review' : isCollecting ? 'Collecting baseline' : 'Unavailable'}
                     </span>
                 </div>
             </header>
 
             <div className="mx-auto max-w-[1500px] px-5 py-6 md:px-8 md:py-8">
+                {isReady && !isCurrent && (
+                    <p role="status" className="mb-5 border border-[#A82A18] bg-[#EBEBEB] p-4 text-sm font-semibold text-[#A82A18]">
+                        Latest snapshot coverage or freshness is below the operating objective. Treat these historical exceptions as review leads until data quality recovers.
+                    </p>
+                )}
                 {isReady && data.flaggedVaults.length > 0 ? (
                     <section aria-labelledby="exception-table-title" className="overflow-hidden border border-[#1E1E1E] bg-[#EBEBEB]">
                         <div className="border-b border-[#1E1E1E] p-5 md:p-6">
                             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#A82A18]">Prioritized by relative variance</p>
                             <h2 id="exception-table-title" className="mt-1 text-2xl font-black tracking-tight">Performance exceptions</h2>
-                            <p className="mt-1 text-sm text-[#1E1E1E]/70">Validate provenance and operating context before taking action.</p>
+                            <p className="mt-1 text-sm text-[#1E1E1E]/70">Validate provenance, data freshness, and operating context before taking action.</p>
                         </div>
 
                         <div className="divide-y divide-[#1E1E1E]/15 sm:hidden">
@@ -110,7 +122,7 @@ export default async function Strategies() {
                 ) : (
                     <section className="mx-auto max-w-3xl border border-[#1E1E1E] bg-[#EBEBEB] p-8 text-center md:p-12">
                         {isReady ? <ShieldCheck className="mx-auto h-9 w-9 text-[#1E1E1E]" aria-hidden="true" /> : <TriangleAlert className="mx-auto h-9 w-9 text-[#FE5238]" aria-hidden="true" />}
-                        <h2 className="mt-4 text-2xl font-black tracking-tight">{isReady ? 'No exceptions require review' : isCollecting ? 'Exception analysis is still maturing' : 'Strategy data is unavailable'}</h2>
+                        <h2 className="mt-4 text-2xl font-black tracking-tight">{isReady ? isCurrent ? 'No exceptions require review' : 'No historical exceptions in the available data' : isCollecting ? 'Exception analysis is still maturing' : 'Strategy data is unavailable'}</h2>
                         <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#1E1E1E]/70">{data.message}</p>
                         <Link href="/dashboard" className="mt-6 inline-flex h-11 min-w-[44px] items-center rounded-full border-[1.5px] border-[#1E1E1E] bg-[#1E1E1E] px-5 font-mono text-xs font-bold uppercase tracking-widest text-[#FE5238] hover:bg-transparent hover:text-[#1E1E1E] transition-colors">Return to portfolio dashboard</Link>
                     </section>

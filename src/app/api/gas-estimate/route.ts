@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { isAddress, isHexString } from 'ethers';
 import { NextResponse } from 'next/server';
 import { getBaseVaultMarketData } from '@/lib/beefy';
@@ -12,7 +13,7 @@ interface EstimateRequest {
     valueWei?: unknown;
 }
 
-// ponytail: per-instance in-memory limiter; move to durable store if multi-instance abuse appears
+// Per-instance limiter. Vercel supplies this header; other runtimes share one bucket.
 const RATE_LIMIT_MAX_REQUESTS = 20;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const requestCounts = new Map<string, { count: number; windowStart: number }>();
@@ -33,7 +34,10 @@ function isRateLimited(ip: string): boolean {
 
 export async function POST(request: Request) {
     const requestId = crypto.randomUUID();
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const forwardedIp = process.env.VERCEL === '1'
+        ? request.headers.get('x-vercel-forwarded-for')
+        : null;
+    const ip = forwardedIp && isIP(forwardedIp) ? forwardedIp : 'unknown';
     if (isRateLimited(ip)) {
         return NextResponse.json({
             code: 'RATE_LIMITED',

@@ -1,6 +1,6 @@
-# 📄 PRD: Beefy Yield-Fidelity Monitor
+# Beefy Yield-Fidelity Monitor product requirements
 **Version**: 1.2
-**Status**: Base production data collection
+**Status**: Base calculator and evidence-gated dashboard implemented; daily collection and operations ongoing
 **Owner**: Rahil Bhavan (University of Michigan)
 
 ## 1. Executive Summary
@@ -12,7 +12,7 @@ Develop a decision-support dashboard that distinguishes headline yield from obse
 - **Strategy Reviewers**: Need to identify vaults where observed price-per-share growth is materially below the interval-matched target.
 
 ## 2. Problem Statement
-- **The Gas Gap**: Users depositing small amounts (under $1k) often don't realize that L2 gas fees and Beefy’s performance fees can make their net return negative for the first 30+ days.
+- **The Gas Gap**: Users depositing small amounts (under $1k) may need many days of reported yield to recover L2 entry and exit costs. Beefy's reported APY already reflects its performance-fee treatment; the calculator does not add that fee again.
 - **Strategy Drift**: Realized vault-share growth can differ from the yield reported when each observation was recorded. The monitor surfaces the variance without claiming a cause until a reviewer investigates it.
 
 ## 3. Functional Requirements
@@ -25,7 +25,7 @@ Develop a decision-support dashboard that distinguishes headline yield from obse
 ### FR2: The "Yield Health" Dashboard (Supabase)
 - **Historical Tracking**: Store `pricePerFullShare` data daily.
 - **Drift Analysis**: Calculate the delta between Expected Yield (from Beefy API) and Actual Growth (from PPS change).
-- **Visualization**: Interactive charts showing the "Yield Curve" vs. the "Efficiency Floor."
+- **Visualization**: Show interval-matched expected and realized PPS growth in a chart with accessible data points.
 - **Validity Gate**: Require at least three valid observations spanning seven
   days and store APY, TVL, contract, block, raw PPS, decimals, provider, and run
   provenance with every observation.
@@ -56,5 +56,6 @@ additional networks.
 ## 6. Implementation Roadmap
 - **Completed — Milestone 1**: Base break-even calculator and sensitivity model.
 - **Completed — Milestone 2**: Production schema, authenticated daily ingestion, provenance, health checks, and public export.
-- **In progress — Milestone 3**: Accumulate the minimum live history and publish the first evidence-backed portfolio exception analysis.
+- **Completed — Milestone 3**: Publish evidence-gated portfolio analysis and exception review for vaults with sufficient history.
+- **Ongoing — Operations**: Check daily freshness and coverage, and investigate exceptions against exported observations and block provenance.
 - **Deferred — Milestone 4**: Evaluate multi-chain expansion after the Base operating window is validated.

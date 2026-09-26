@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseReader, hasSupabaseReaderConfiguration } from '@/lib/supabase';
+import { loadAllPages } from '@/lib/supabasePages';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,17 +46,21 @@ export async function GET(request: Request) {
             );
         }
 
-        let query = createSupabaseReader()
-            .from('pps_history')
-            .select(EXPORT_COLUMNS.join(','))
-            .eq('validation_status', 'valid')
-            .order('recorded_at', { ascending: false })
-            .limit(10_000);
-        if (vaultId) query = query.eq('vault_id', vaultId);
-
-        const { data, error } = await query;
-        if (error) throw error;
-        const rows = data ?? [];
+        const supabase = createSupabaseReader();
+        const since = new Date(Date.now() - 90 * 86_400_000).toISOString();
+        const rows = await loadAllPages<Record<string, unknown>>(async (from, to) => {
+            let query = supabase
+                .from('pps_history')
+                .select(EXPORT_COLUMNS.join(','))
+                .eq('validation_status', 'valid')
+                .gte('recorded_at', since)
+                .order('recorded_at', { ascending: false })
+                .order('id', { ascending: true })
+                .range(from, to);
+            if (vaultId) query = query.eq('vault_id', vaultId);
+            const { data, error } = await query;
+            return { data: data as unknown as Record<string, unknown>[] | null, error };
+        });
         const headers = {
             'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
             'X-Request-Id': requestId,

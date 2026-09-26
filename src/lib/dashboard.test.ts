@@ -99,6 +99,34 @@ describe('drift analysis', () => {
         expect(result.portfolioVaults[0].currentApy).toBe(0);
     });
 
+    it('weights configured portfolio totals across analyzed and unobserved vaults', () => {
+        const vaults = [
+            { id: 'vault-1', name: 'One', chain: 'base', target_apy: 0.1, tvl: 1_000, updated_at: '2026-01-09T00:00:00.000Z' },
+            { id: 'vault-2', name: 'Two', chain: 'base', target_apy: 0.2, tvl: 3_000, updated_at: '2026-01-09T00:00:00.000Z' },
+            { id: 'vault-3', name: 'Three', chain: 'base', target_apy: 0.1, tvl: 1_000, updated_at: '2026-01-09T00:00:00.000Z' },
+        ];
+        const dates = ['2026-01-01T00:00:00.000Z', '2026-01-05T00:00:00.000Z', '2026-01-09T00:00:00.000Z'];
+        const observations = dates.flatMap((date) => [
+            snapshot(date, 1, 0.1),
+            { ...snapshot(date, 1, 0.2), vault_id: 'vault-2' },
+        ]);
+
+        const result = buildDashboardData(vaults, observations);
+
+        expect(result.trackedVaults).toBe(3);
+        expect(result.readyVaults).toBe(2);
+        expect(result.totalTvl).toBe(5_000);
+        expect(result.weightedApy).toBeCloseTo(0.16, 8);
+        expect(result.analyzedTvl).toBe(4_000);
+        expect(result.underperformingTvl).toBe(4_000);
+        expect(result.portfolioExpectedApy).toBeCloseTo(0.175, 8);
+        expect(result.portfolioActualApy).toBe(0);
+        expect(result.annualizedYieldGapUsd).toBeCloseTo(700, 8);
+        expect(result.analysisCoveragePercent).toBeCloseTo(200 / 3, 8);
+        expect(result.latestSnapshotCoveragePercent).toBeCloseTo(200 / 3, 8);
+        expect(result.portfolioVaults.find((vault) => vault.id === 'vault-3')?.status).toBe('no-data');
+    });
+
     it('excludes intervals touching non-positive PPS observations', () => {
         const analysis = analyzeSnapshotSeries([
             snapshot('2026-01-01T00:00:00.000Z', 1),
@@ -141,6 +169,19 @@ describe('drift analysis', () => {
             snapshot('2026-01-05T00:00:00.000Z', 1.001, 1e-9),
             snapshot('2026-01-09T00:00:00.000Z', 1.002, 1e-9),
         ])).toBeNull();
+    });
+
+    it('excludes anomalous upstream APY intervals from annualized performance', () => {
+        const analysis = analyzeSnapshotSeries([
+            snapshot('2026-01-01T00:00:00.000Z', 1, 0.1),
+            snapshot('2026-01-05T00:00:00.000Z', 1.001, 1e35),
+            snapshot('2026-01-09T00:00:00.000Z', 1.002, 0.1),
+            snapshot('2026-01-13T00:00:00.000Z', 1.003, 0.1),
+        ]);
+
+        expect(analysis?.measurementDays).toBe(8);
+        expect(analysis?.expectedApy).toBeCloseTo(0.1, 8);
+        expect(analysis?.points).toHaveLength(2);
     });
 
     it('does not analyze short or incomplete histories', () => {
