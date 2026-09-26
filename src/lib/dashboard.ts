@@ -1,7 +1,10 @@
 import { createSupabaseReader, hasSupabaseReaderConfiguration } from '@/lib/supabase';
+import { loadAllPages } from '@/lib/supabasePages';
 
 const MINIMUM_ANALYSIS_DAYS = 7;
 const MINIMUM_OBSERVATIONS = 3;
+// APYs above 1,000% are treated as upstream anomalies, not yield evidence.
+const MAX_ANALYSIS_APY = 10;
 
 function toFiniteNumber(value: unknown, fallback = 0): number {
     const numeric = Number(value);
@@ -167,6 +170,7 @@ export function analyzeSnapshotSeries(rows: SnapshotRow[]): VaultAnalysis | null
             || previous.target_apy === null
             || !Number.isFinite(targetApy)
             || targetApy <= -1
+            || targetApy > MAX_ANALYSIS_APY
             || intervalDays <= 0
         ) continue;
 
@@ -358,27 +362,28 @@ export async function getDashboardData(): Promise<DashboardData> {
     try {
         const supabase = createSupabaseReader();
         const since = new Date(Date.now() - 90 * 86_400_000).toISOString();
-        const [vaultResult, snapshotResult] = await Promise.all([
+        const [vaultResult, snapshotRows] = await Promise.all([
             supabase
                 .from('vaults')
                 .select('id,name,chain,target_apy,tvl,updated_at')
                 .eq('chain', 'base')
                 .eq('is_active', true)
                 .order('tvl', { ascending: false }),
-            supabase
+            loadAllPages<SnapshotRow>((from, to) => supabase
                 .from('pps_history')
                 .select('vault_id,price_per_share,target_apy,tvl,recorded_at,block_number,block_hash,contract_address,provider_label,validation_status')
                 .eq('validation_status', 'valid')
                 .gte('recorded_at', since)
-                .order('recorded_at', { ascending: true }),
+                .order('recorded_at', { ascending: true })
+                .order('id', { ascending: true })
+                .range(from, to)),
         ]);
 
         if (vaultResult.error) throw vaultResult.error;
-        if (snapshotResult.error) throw snapshotResult.error;
 
         return buildDashboardData(
             (vaultResult.data ?? []) as VaultRow[],
-            (snapshotResult.data ?? []) as SnapshotRow[],
+            snapshotRows,
         );
     } catch (error) {
         console.error('Dashboard data query failed:', error);

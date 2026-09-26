@@ -34,7 +34,7 @@ Alert when any of the following is true:
 - `recorded_snapshots / requested_vaults < 0.95`.
 - The RPC block number stops advancing.
 
-Vercel does not retry failed cron executions. A failed run can be retried with the same authenticated endpoint; `begin_scrape_run` reclaims failed or stale runs and the daily unique key prevents duplicates.
+Vercel does not retry failed cron executions. A run with fewer than 95% valid snapshots is marked failed even though its successful observations remain recorded. It can be retried with the same authenticated endpoint; `begin_scrape_run` reclaims failed or stale runs and the daily unique key prevents duplicate observations.
 
 ## Incident response
 

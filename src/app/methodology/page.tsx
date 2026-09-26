@@ -13,7 +13,7 @@ const sections = [
     },
     {
         title: 'Expected yield',
-        body: 'Each PPS observation stores the Beefy-reported target APY observed during the same scrape. Expected growth is compounded interval by interval, so later APY changes are not applied retroactively.',
+        body: 'Each PPS observation stores the Beefy-reported target APY observed during the same scrape. Expected growth is compounded interval by interval, so later APY changes are not applied retroactively. Inputs above 1,000% APY remain in the export but are excluded from analysis as upstream anomalies.',
     },
     {
         title: 'Drift',

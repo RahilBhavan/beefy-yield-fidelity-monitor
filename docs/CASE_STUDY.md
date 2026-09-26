@@ -7,7 +7,7 @@ Yield/Fidelity is an independent financial-analysis project that asks two decisi
 1. How long will expected earnings take to recover entry and exit costs?
 2. Is a vault's observed price-per-share growth keeping pace with the yield reported during the same period?
 
-The production system monitors 50 active Beefy vaults on Base, combines market and on-chain data, and withholds performance conclusions until at least three valid observations span seven days. The result is a reproducible exception-review workflow rather than a prediction or investment recommendation.
+The collector selects up to 50 active Beefy vaults on Base by TVL, combines market and on-chain data, and withholds performance conclusions until at least three valid observations span seven days. The result is a reproducible exception-review workflow rather than a prediction or investment recommendation.
 
 ## Business challenge
 
@@ -50,9 +50,7 @@ The annualized gap is `Σ TVL × (expected APY − realized APY)`. It is an extr
 
 ## Current evidence state
 
-Production data collection began in August 2026. The deployment has successfully recorded the initial 50-vault Base snapshot and exposes freshness and block provenance through its health and export endpoints. The first strategy finding remains intentionally pending until the seven-day evidence gate passes.
-
-That pending state is itself a control: the interface recommends continued collection instead of manufacturing a conclusion from an immature series.
+Production data collection began in August 2026. The seven-day evidence gate has passed for some vaults, allowing the dashboard to identify performance exceptions for review. These are variance signals, not conclusions about their causes. Recommendations depend on current freshness and snapshot coverage; the public export preserves the observations and provenance needed to inspect each signal. The live dashboard shows the current count and freshness rather than relying on a fixed figure in this document.
 
 ## Controls and operating model
 
@@ -60,8 +58,8 @@ That pending state is itself a control: the interface recommends continued colle
 - Authentication and server-only credentials protect write access.
 - PostgreSQL constraints and row-level security enforce data boundaries.
 - Invalid reads are rejected while their failure provenance is preserved.
-- Health monitoring checks deployment status and observation freshness.
-- CSV/JSON export makes displayed analysis independently reproducible.
+- Health monitoring checks Base RPC reachability, observation freshness, and latest-snapshot coverage.
+- CSV/JSON export of the rolling 90-day analysis window makes displayed results independently reproducible.
 - Unit, route, database, browser, accessibility, build, and dependency checks run in CI; live integration and load-smoke checks remain explicit opt-in verification commands.
 
 ## Recommendation framework
@@ -70,12 +68,25 @@ That pending state is itself a control: the interface recommends continued colle
 | --- | --- |
 | Unavailable | Restore ingestion or database access before drawing conclusions. |
 | Collecting | Continue daily collection and verify snapshot coverage. |
+| Stale or incomplete | Restore freshness and coverage before acting on historical variance. |
 | Ready, no exceptions | Continue monitoring; the threshold does not support intervention. |
 | Ready, exceptions present | Prioritize the most material variance, validate its provenance, and investigate strategy operations before acting. |
 
 ## Limitations
 
 The project measures vault-share growth and execution friction. It does not model token-price exposure, impermanent loss, slippage, bridge costs, taxes, protocol exploits, or future APY. Beefy-reported APY is an external input, and short measurement windows can produce volatile annualized results. Results are informational and are not financial advice.
+
+## Portfolio walkthrough
+
+Start with the [calculator](https://yield.rahilbhavan.com/) to show how deposit size and estimated entry and exit fees change break-even time. Then open the [dashboard](https://yield.rahilbhavan.com/dashboard), read the freshness and coverage indicators, and inspect a vault that passes the evidence gate. Use the [methodology](https://yield.rahilbhavan.com/methodology) and [CSV export](https://yield.rahilbhavan.com/api/export) to show how the interval comparison can be checked against source observations and block provenance.
+
+## Resume bullet options
+
+- Built a Next.js and Supabase monitor for up to 50 Base vaults that compares interval-matched reported APY with on-chain price-per-share growth.
+- Implemented authenticated daily ingestion with same-block contract reads, PostgreSQL constraints, and provenance-backed CSV export for reproducible yield analysis.
+- Designed a transaction-cost break-even calculator and an evidence gate that requires three valid observations across seven days before publishing vault drift.
+
+These bullets describe implemented features. Add measured uptime, user adoption, or performance results only after recording them from a defined observation period.
 
 ## Skills demonstrated
 

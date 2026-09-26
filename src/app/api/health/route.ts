@@ -12,10 +12,11 @@ export async function GET() {
     try {
         const provider = createChainProvider(baseChain);
         const blockPromise = withRpcRetry(() => provider.getBlockNumber());
-        const snapshotPromise = configured
-            ? createSupabaseReader()
+        const supabase = configured ? createSupabaseReader() : null;
+        const snapshotPromise = supabase
+            ? supabase
                 .from('pps_history')
-                .select('recorded_at,block_number')
+                .select('recorded_at,block_number,snapshot_date')
                 .eq('validation_status', 'valid')
                 .order('recorded_at', { ascending: false })
                 .limit(1)
@@ -28,7 +29,27 @@ export async function GET() {
         const ageHours = latestSnapshotAt
             ? (checkedAt.getTime() - Date.parse(latestSnapshotAt)) / 3_600_000
             : null;
-        const status = !configured || ageHours === null || ageHours > 36 ? 'degraded' : 'ok';
+        const [vaultResult, coverageResult] = supabase && snapshotResult.data
+            ? await Promise.all([
+                supabase.from('vaults').select('id')
+                    .eq('chain', baseChain.slug).eq('is_active', true),
+                supabase.from('pps_history').select('vault_id')
+                    .eq('validation_status', 'valid')
+                    .eq('snapshot_date', snapshotResult.data.snapshot_date),
+            ])
+            : [{ data: null, error: null }, { data: null, error: null }];
+        if (vaultResult.error) throw vaultResult.error;
+        if (coverageResult.error) throw coverageResult.error;
+        const activeVaultIds = new Set((vaultResult.data ?? []).map((vault) => vault.id));
+        const trackedVaults = activeVaultIds.size;
+        const recordedSnapshots = new Set(
+            (coverageResult.data ?? [])
+                .map((snapshot) => snapshot.vault_id)
+                .filter((vaultId) => activeVaultIds.has(vaultId)),
+        ).size;
+        const coveragePercent = trackedVaults > 0 ? recordedSnapshots / trackedVaults * 100 : 0;
+        const status = !configured || ageHours === null || ageHours > 36 || coveragePercent < 95
+            ? 'degraded' : 'ok';
 
         return NextResponse.json({
             status,
@@ -44,6 +65,9 @@ export async function GET() {
                 latestSnapshotAt,
                 latestSnapshotBlock: snapshotResult.data?.block_number ?? null,
                 ageHours,
+                trackedVaults,
+                recordedSnapshots,
+                coveragePercent,
             },
             requestId,
         }, {

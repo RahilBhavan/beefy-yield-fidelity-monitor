@@ -6,6 +6,7 @@ import { createSupabaseAdmin } from '@/lib/supabase';
 import { baseChain } from '@/lib/chains';
 
 export const dynamic = 'force-dynamic';
+const MINIMUM_SNAPSHOT_COVERAGE = 0.95;
 
 function isAuthorized(authHeader: string | null, cronSecret: string | undefined): boolean {
     if (!cronSecret || authHeader === null) return false;
@@ -106,6 +107,10 @@ export async function GET(request: Request) {
             },
         );
         if (ingestError) throw new Error(`Atomic ingest failed: ${ingestError.message}`);
+        const storedCount = Number(recordedCount ?? snapshotPayload.length);
+        if (storedCount < Math.ceil(vaults.length * MINIMUM_SNAPSHOT_COVERAGE)) {
+            throw new Error(`Snapshot coverage below 95%: ${storedCount} of ${vaults.length} vaults recorded`);
+        }
 
         return NextResponse.json({
             success: true,
@@ -115,7 +120,7 @@ export async function GET(request: Request) {
             blockNumber: batch.blockNumber,
             blockHash: batch.blockHash,
             trackedVaults: vaults.length,
-            recordedSnapshots: Number(recordedCount ?? snapshotPayload.length),
+            recordedSnapshots: storedCount,
             skippedVaults: validationFailures.length,
             snapshotDate,
         });
