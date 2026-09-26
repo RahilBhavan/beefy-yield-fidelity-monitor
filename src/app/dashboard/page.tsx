@@ -161,7 +161,7 @@ export default async function Dashboard() {
             </section>
 
             <div className="mx-auto max-w-[1500px] px-5 py-6 md:px-8 md:py-8">
-                <section className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.75fr)]">
+                <section className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.75fr)]">
                     {isReady ? (
                         <DriftChart vaultName={data.chartVaultName} points={data.driftPoints} />
                     ) : (
@@ -175,7 +175,7 @@ export default async function Dashboard() {
                         />
                     )}
 
-                    <aside className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
+                    <aside className="grid min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-1">
                         <section aria-labelledby="exception-review-title" className="border border-[#1E1E1E] bg-[#EBEBEB] p-5 md:p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>

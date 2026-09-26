@@ -28,7 +28,7 @@ export function DriftChart({ vaultName, points }: DriftChartProps) {
 
     if (points.length === 0 || filtered.length === 0) {
         return (
-            <section aria-labelledby="performance-chart-title" className="border border-[#1E1E1E] bg-[#EBEBEB] p-5 md:p-7">
+            <section aria-labelledby="performance-chart-title" className="min-w-0 border border-[#1E1E1E] bg-[#EBEBEB] p-5 md:p-7">
                 <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#1E1E1E]/70">Performance variance</p>
                 <h2 id="performance-chart-title" className="mt-1 flex items-center gap-2 text-xl font-black tracking-tight md:text-2xl">
                     <TrendingUp className="h-5 w-5 text-[#FE5238]" aria-hidden="true" />
@@ -69,7 +69,7 @@ export function DriftChart({ vaultName, points }: DriftChartProps) {
     const xLabels = [...new Set([0, Math.floor((filtered.length - 1) / 2), filtered.length - 1])];
 
     return (
-        <section aria-labelledby="performance-chart-title" className="border border-[#1E1E1E] bg-[#EBEBEB] p-5 md:p-7">
+        <section aria-labelledby="performance-chart-title" className="min-w-0 border border-[#1E1E1E] bg-[#EBEBEB] p-5 md:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#1E1E1E]/70">Performance variance</p>
