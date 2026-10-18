@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { buildBreakEvenScenarios, calculateBreakEven } from '@/lib/yield';
+import { describeHistoricalRates, type SnapshotRow } from '@/lib/drift';
+import { buildRateOptions, resolveRateOption, type HistoryState, type RateBasis } from '@/lib/rateBasis';
 import Link from 'next/link';
 
 interface Vault {
@@ -30,10 +32,30 @@ interface SourceData {
     requestId: string;
 }
 
+function isSnapshotRow(value: unknown, vaultId: string): value is SnapshotRow {
+    if (!value || typeof value !== 'object') return false;
+    const row = value as Record<string, unknown>;
+    return row.vault_id === vaultId && typeof row.recorded_at === 'string';
+}
+
+async function loadHistoryState(vaultId: string, signal: AbortSignal): Promise<HistoryState> {
+    const res = await fetch(`/api/export?format=json&vaultId=${encodeURIComponent(vaultId)}`, { signal });
+    if (res.status === 503) {
+        return { status: 'unavailable', reason: 'Snapshot history is not configured on this deployment.' };
+    }
+    if (!res.ok) return { status: 'unavailable', reason: 'Snapshot history is temporarily unavailable.' };
+    const body: unknown = await res.json();
+    const data = body && typeof body === 'object' ? (body as { data?: unknown }).data : null;
+    const rows = Array.isArray(data) ? data.filter((row) => isSnapshotRow(row, vaultId)) : [];
+    return describeHistoricalRates(rows);
+}
+
 export function Calculator() {
     const [deposit, setDeposit] = useState<string>('1000');
     const [selectedVaultId, setSelectedVaultId] = useState<string>('');
     const [vaultSearch, setVaultSearch] = useState<string>('');
+    const [rateBasis, setRateBasis] = useState<RateBasis>('headline');
+    const [history, setHistory] = useState<{ vaultId: string; state: HistoryState } | null>(null);
 
     const [vaults, setVaults] = useState<Vault[]>([]);
     const [gasData, setGasData] = useState<GasData | null>(null);
@@ -72,6 +94,24 @@ export function Calculator() {
         return () => controller.abort();
     }, [retryCount]);
 
+    useEffect(() => {
+        if (!selectedVaultId) return;
+        const controller = new AbortController();
+        async function fetchHistory(vaultId: string) {
+            let state: HistoryState;
+            try {
+                state = await loadHistoryState(vaultId, controller.signal);
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+                console.error('Failed to fetch snapshot history:', error);
+                state = { status: 'unavailable', reason: 'Snapshot history is temporarily unavailable.' };
+            }
+            if (!controller.signal.aborted) setHistory({ vaultId, state });
+        }
+        fetchHistory(selectedVaultId);
+        return () => controller.abort();
+    }, [selectedVaultId]);
+
     const selectedVault = useMemo(() => vaults.find(v => v.id === selectedVaultId) || null, [vaults, selectedVaultId]);
     const filteredVaults = useMemo(() => {
         const query = vaultSearch.trim().toLowerCase();
@@ -83,11 +123,19 @@ export function Calculator() {
     }, [vaults, vaultSearch]);
     const rawDeposit = parseFloat(deposit) || 0;
 
+    const historyState: HistoryState = history && history.vaultId === selectedVaultId
+        ? history.state
+        : { status: 'loading' };
+    const historicalWindow = historyState.status === 'ready' ? historyState : null;
+    const rateOptions = selectedVault ? buildRateOptions(selectedVault.apy, historyState) : [];
+    const activeRate = rateOptions.length > 0 ? resolveRateOption(rateBasis, rateOptions) : null;
+    const activeApy = activeRate?.apy ?? null;
+
     const calculations = useMemo(() => {
-        if (!selectedVault || !gasData || rawDeposit <= 0) return null;
+        if (activeApy === null || !gasData || rawDeposit <= 0) return null;
         const result = calculateBreakEven(
             rawDeposit,
-            selectedVault.apy,
+            activeApy,
             gasData.entryCostUsd,
             gasData.exitCostUsd,
         );
@@ -100,17 +148,17 @@ export function Calculator() {
             breakEvenDays: result.breakEvenDays,
             willNeverBreakEven: result.breakEvenDays === null,
         };
-    }, [selectedVault, gasData, rawDeposit]);
+    }, [activeApy, gasData, rawDeposit]);
 
     const scenarios = useMemo(() => {
-        if (!selectedVault || !gasData || rawDeposit <= 0) return [];
+        if (activeApy === null || !gasData || rawDeposit <= 0) return [];
         return buildBreakEvenScenarios(
             rawDeposit,
-            selectedVault.apy,
+            activeApy,
             gasData.entryCostUsd,
             gasData.exitCostUsd,
         );
-    }, [selectedVault, gasData, rawDeposit]);
+    }, [activeApy, gasData, rawDeposit]);
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
     const formatPercentage = (val: number) => (val * 100).toFixed(2) + '%';
@@ -118,6 +166,21 @@ export function Calculator() {
         if (val > 1e6) return `$${(val / 1e6).toFixed(1)}M`;
         if (val > 1e3) return `$${(val / 1e3).toFixed(1)}K`;
         return `$${val.toFixed(0)}`;
+    };
+    const formatWindowDate = (value: string, withYear: boolean) => new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        ...(withYear ? { year: 'numeric' as const } : {}),
+        timeZone: 'UTC',
+    }).format(new Date(value));
+    const historicalWindowText = historicalWindow
+        ? `${formatWindowDate(historicalWindow.windowStart, false)} to ${formatWindowDate(historicalWindow.windowEnd, true)} · ${historicalWindow.measurementDays.toFixed(1)} measured days · ${historicalWindow.observations} snapshots`
+        : null;
+    const rateDetail = (basis: RateBasis, disabledReason: string | null) => {
+        if (disabledReason) return disabledReason;
+        if (basis === 'headline') return 'Beefy\'s current reported rate. It can move within a day.';
+        if (basis === 'expected') return `APY recorded at the start of each interval. ${historicalWindowText}`;
+        return `Annualized vault share-price growth. ${historicalWindowText}`;
     };
     const formatTimestamp = (value: string) => new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -223,6 +286,7 @@ export function Calculator() {
                                     <span>
                                         <span className={`block font-bold font-sans ${selectedVaultId === vault.id ? 'text-[#1E1E1E]' : ''}`}>{vault.name}</span>
                                         <span className="block text-xs font-mono opacity-80 uppercase">TVL: {formatTvl(vault.tvl)}</span>
+                                        <span className="block break-all text-xs font-mono opacity-80">{vault.id}</span>
                                     </span>
                                     <span className={`font-mono font-bold ${selectedVaultId === vault.id ? 'text-[#A82A18]' : ''}`}>
                                         {formatPercentage(vault.apy)}
@@ -251,12 +315,13 @@ export function Calculator() {
                                 Break-even estimate
                             </div>
 
-                            <div className="mt-8 flex flex-col items-center justify-center text-center">
+
+                            <div className="mt-6 flex flex-col items-center justify-center text-center">
                                 <p className="font-mono text-xs uppercase text-[#AFAFAF] mb-2">Estimated time to recover fees</p>
                                 <p className="sr-only" role="status" aria-live="polite">
                                     {calculations.willNeverBreakEven
-                                        ? 'No break-even is projected at the current deposit and APY.'
-                                        : `Estimated time to recover fees: ${calculations.breakEvenDays} days.`}
+                                        ? `No break-even is projected at this deposit using the ${activeRate?.label}.`
+                                        : `Estimated time to recover fees: ${calculations.breakEvenDays} days using the ${activeRate?.label} of ${formatPercentage(activeApy ?? 0)}.`}
                                 </p>
                                 {calculations.willNeverBreakEven ? (
                                     <div className="text-4xl lg:text-5xl font-black tracking-tighter text-[#FE5238]">No break-even</div>
@@ -266,7 +331,61 @@ export function Calculator() {
                                         <span className="font-mono font-bold uppercase text-xl text-[#FE5238]">Days</span>
                                     </div>
                                 )}
+                                {activeRate && activeApy !== null && (
+                                    <p className="mt-2 font-mono text-xs uppercase text-[#AFAFAF]">
+                                        At {formatPercentage(activeApy)} · {activeRate.label}
+                                    </p>
+                                )}
                             </div>
+
+                            <fieldset className="mt-6">
+                                <legend className="mb-2 font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6]">
+                                    [SELECT] APY input
+                                </legend>
+                                <div className="flex flex-col border-[1.5px] border-[#D6D6D6]/30">
+                                    {rateOptions.map((option) => {
+                                        const isActive = activeRate?.basis === option.basis;
+                                        const isDisabled = option.disabledReason !== null;
+                                        const detailId = `rate-basis-${option.basis}-detail`;
+                                        return (
+                                            <label
+                                                key={option.basis}
+                                                className={`flex items-start gap-3 border-b border-[#D6D6D6]/10 px-3 py-3 last:border-b-0 has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-[-3px] has-[input:focus-visible]:outline-[#FE5238] ${isActive
+                                                    ? 'bg-[#EBEBEB] text-[#1E1E1E]'
+                                                    : isDisabled
+                                                        ? 'cursor-not-allowed text-[#AFAFAF]'
+                                                        : 'cursor-pointer text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="rate-basis"
+                                                    value={option.basis}
+                                                    checked={isActive}
+                                                    disabled={isDisabled}
+                                                    onChange={() => setRateBasis(option.basis)}
+                                                    aria-describedby={option.basis === 'headline' ? detailId : `${detailId} rate-basis-caveat`}
+                                                    className="mt-1 h-4 w-4 shrink-0 accent-[#FE5238]"
+                                                />
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                                                        <span className="font-sans text-sm font-bold">{option.label}</span>
+                                                        <span className={`font-mono text-sm font-bold ${isActive ? 'text-[#A82A18]' : isDisabled ? '' : 'text-[#FF765F]'}`}>
+                                                            {option.apy === null ? 'N/A' : formatPercentage(option.apy)}
+                                                        </span>
+                                                    </span>
+                                                    <span id={detailId} className="mt-1 block font-mono text-xs leading-snug">
+                                                        {rateDetail(option.basis, option.disabledReason)}
+                                                    </span>
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                                <p id="rate-basis-caveat" className="mt-2 font-mono text-xs leading-relaxed text-[#D6D6D6]/70">
+                                    Historical rates use the export&apos;s rolling 90-day window. Share price is measured in the vault&apos;s LP token, so token price moves, impermanent loss and swap costs are not included.
+                                </p>
+                            </fieldset>
                         </div>
 
                         <div className="w-full font-mono text-xs uppercase font-bold text-[#D6D6D6] space-y-3 mt-auto">
@@ -298,7 +417,7 @@ export function Calculator() {
                                 aria-label="Break-even sensitivity table"
                             >
                                 <table className="w-full min-w-[420px] font-mono text-xs uppercase text-left">
-                                    <caption className="sr-only">Break-even sensitivity under downside, current, and upside assumptions</caption>
+                                    <caption className="sr-only">Break-even sensitivity under downside, current, and upside assumptions, using the {activeRate?.label}</caption>
                                     <thead className="bg-[#EBEBEB] text-[#1E1E1E]">
                                         <tr><th className="p-2">Scenario</th><th className="p-2">APY</th><th className="p-2">Total fees</th><th className="p-2 text-right">Break-even</th></tr>
                                     </thead>
@@ -315,7 +434,7 @@ export function Calculator() {
                                 </table>
                             </div>
                             <p className="mt-2 font-mono text-xs text-[#D6D6D6]/70">
-                                Downside assumes 25% lower APY and 50% higher fees; upside assumes 25% higher APY and 25% lower fees.
+                                Current uses the selected APY input. Downside assumes 25% lower APY and 50% higher fees; upside assumes 25% higher APY and 25% lower fees.
                             </p>
                         </div>
 
@@ -331,7 +450,7 @@ export function Calculator() {
                         {gasData && (
                             <p className="mt-4 font-mono text-xs leading-relaxed text-[#D6D6D6]/70">
                                 Network fee estimate updated {formatTimestamp(gasData.estimatedAt)}. {gasData.assumptions}
-                                {' '}The displayed APY already includes Beefy&apos;s reported performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
+                                {' '}The headline APY already includes Beefy&apos;s reported performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
                                 {sourceData && <> Vault rates updated {formatTimestamp(sourceData.beefyFetchedAt)} for chain {sourceData.chainId}.</>}
                                 {' '}<Link href="/methodology" className="underline hover:text-[#FE5238]">Methodology and limitations.</Link>
                             </p>

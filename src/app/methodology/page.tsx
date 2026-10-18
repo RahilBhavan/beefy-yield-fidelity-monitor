@@ -25,7 +25,7 @@ const sections = [
     },
     {
         title: 'Break-even estimate',
-        body: 'Break-even divides estimated entry and exit network costs by the effective daily yield implied by Beefy-reported APY. Sensitivity scenarios vary APY and fees around the current estimate. The default uses representative transaction sizes and Base L1 fee upper bounds; it is not a wallet-specific transaction quote.',
+        body: 'Break-even divides estimated entry and exit network costs by the effective daily yield implied by the selected APY input: Beefy\'s live headline APY by default, or, once a vault has three valid snapshots spanning seven days, the time-weighted recorded APY or realized share-price growth over the export window. Realized growth is measured in the vault\'s LP token, so it excludes token price moves, impermanent loss and swap costs. Sensitivity scenarios vary APY and fees around the current estimate. The default uses representative transaction sizes and Base L1 fee upper bounds; it is not a wallet-specific transaction quote.',
     },
     {
         title: 'Limitations',

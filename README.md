@@ -10,7 +10,7 @@ An independent DeFi observability dashboard that compares Beefy vault headline y
 
 ## Three-minute demo
 
-1. Open the [calculator](https://yield.rahilbhavan.com/), choose a Base vault, and change the deposit amount. Compare the break-even days and sensitivity scenarios.
+1. Open the [calculator](https://yield.rahilbhavan.com/), choose a Base vault, and change the deposit amount. Switch the APY input between the live headline, the time-weighted recorded APY and realized share-price growth, and compare the break-even days and sensitivity scenarios.
 2. Open the [dashboard](https://yield.rahilbhavan.com/dashboard). Check the latest snapshot time and coverage before reading the portfolio summary or opening exception review.
 3. Open the [methodology](https://yield.rahilbhavan.com/methodology) and download the [observation CSV](https://yield.rahilbhavan.com/api/export). The export contains the valid observations behind the rolling 90-day analysis window, including block and provider provenance.
 

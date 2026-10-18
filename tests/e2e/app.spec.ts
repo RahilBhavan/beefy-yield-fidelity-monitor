@@ -26,6 +26,57 @@ const calculatorData = {
     },
 };
 
+// Share price compounding at 3% a year while Beefy recorded 12%, one snapshot every 10 days.
+const historyRows = [0, 10, 20, 30].map((day) => ({
+    vault_id: 'base-test-vault',
+    price_per_share: Math.pow(1.03, day / 365),
+    target_apy: 0.12,
+    tvl: 1_250_000,
+    recorded_at: new Date(Date.UTC(2026, 6, 13) + day * 86_400_000).toISOString(),
+    block_number: 1 + day,
+    block_hash: '0xabc',
+    contract_address: '0xvault',
+    provider_label: 'e2e-fixture',
+    validation_status: 'valid',
+}));
+
+test('calculator flips break-even days between headline and realized rates', async ({ page }) => {
+    await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
+    await page.route('**/api/export?*', (route) => route.fulfill({ json: { data: historyRows, requestId: 'e2e' } }));
+    await page.goto('/');
+
+    await page.getByLabel(/intended deposit size/i).fill('10');
+    const rateGroup = page.getByRole('group', { name: /apy input/i });
+    const headline = rateGroup.getByRole('radio', { name: /headline apy/i });
+    const realized = rateGroup.getByRole('radio', { name: /realized share-price growth/i });
+    const status = page.getByRole('status').filter({ hasText: /estimated time to recover fees/i });
+
+    await expect(headline).toBeChecked();
+    await expect(status).toContainText('42 days using the Headline APY (live) of 12.00%');
+    await expect(realized).toBeEnabled();
+    await expect(rateGroup).toContainText('Jul 13 to Aug 12, 2026 · 30.0 measured days · 4 snapshots');
+    await expect(page.getByText(/share price is measured in the vault's lp token/i)).toBeVisible();
+
+    await headline.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(rateGroup.getByRole('radio', { name: /time-weighted recorded apy/i })).toBeChecked();
+    await page.keyboard.press('ArrowDown');
+    await expect(realized).toBeChecked();
+    await expect(status).toContainText('161 days using the Realized share-price growth of 3.00%');
+    await expect(page.getByRole('table', { name: /break-even sensitivity/i })).toContainText('3.00%');
+});
+
+test('calculator disables historical rates when snapshot history is unavailable', async ({ page }) => {
+    await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
+    await page.goto('/');
+
+    const realized = page.getByRole('radio', { name: /realized share-price growth/i });
+    await expect(realized).toBeDisabled();
+    await expect(page.getByRole('group', { name: /apy input/i }))
+        .toContainText('Snapshot history is not configured on this deployment.');
+    await expect(page.getByRole('radio', { name: /headline apy/i })).toBeChecked();
+});
+
 test('calculator presents its model and methodology', async ({ page }) => {
     await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
     await page.goto('/');
@@ -39,8 +90,12 @@ test('calculator presents its model and methodology', async ({ page }) => {
 
 test('homepage is accessible and does not overflow a mobile viewport', async ({ page }) => {
     await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
+    await page.route('**/api/export?*', (route) => route.fulfill({ json: { data: historyRows, requestId: 'e2e' } }));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
+    await page.getByRole('radio', { name: /realized share-price growth/i }).check();
+    // Hover an unselected rate so its hover background is part of the contrast check.
+    await page.getByText('Headline APY (live)').hover();
 
     const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
