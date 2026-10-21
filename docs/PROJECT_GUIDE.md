@@ -6,7 +6,7 @@ Yield/Fidelity is an independent portfolio project. It is not affiliated with or
 
 ## 1. Project overview
 
-Yield/Fidelity is a production financial-analysis application for active Beefy vaults on Base. It answers two questions that a headline APY alone cannot answer:
+Yield/Fidelity is a deployed decision-support application for active Beefy vaults on Base. It answers two questions that a headline APY alone cannot answer:
 
 1. How long should a deposit take to recover its estimated entry and exit costs?
 2. Is a vault's realized on-chain price-per-share growth keeping pace with the yield reported during the same period?
@@ -76,8 +76,10 @@ The homepage is a planning tool. A user enters a proposed deposit, searches for 
 2. The API loads the active Base vault set, current APYs, TVLs, and ETH price from Beefy.
 3. The API obtains a current Base gas and L1 data-fee estimate.
 4. The user chooses a vault and deposit amount.
-5. The browser calculates expected daily earnings and the break-even horizon.
-6. The interface displays downside, current, and upside scenarios.
+5. The browser requests that vault's snapshot history from `/api/export?format=json&vaultId=<vault-id>`.
+6. The user chooses the APY input: the live headline APY, the time-weighted recorded APY, or realized share-price growth. The two historical inputs stay disabled, with a reason, until the vault's history passes the evidence gate.
+7. The browser calculates expected daily earnings and the break-even horizon.
+8. The interface displays downside, current, and upside scenarios.
 
 ### Calculation
 
@@ -319,6 +321,7 @@ The dashboard changes its conclusion and recommendation with the evidence state:
 | --- | --- |
 | Unavailable | Restore database or ingestion health before drawing conclusions. |
 | Collecting | Continue daily collection and verify coverage. |
+| Stale or incomplete | Restore freshness and coverage before acting on historical variance. The latest snapshot must be under 36 hours old and cover at least 95% of tracked vaults. |
 | Ready, no exceptions | Continue monitoring; the threshold does not support intervention. |
 | Ready, exceptions present | Validate the most material variance and its provenance before escalation. |
 

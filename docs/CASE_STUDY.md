@@ -1,5 +1,7 @@
 # Yield/Fidelity: From Headline Yield to Decision Support
 
+This case study explains the decision problem behind Yield/Fidelity, its analytical approach, and how the dashboard turns evidence into a recommendation.
+
 ## Executive summary
 
 Yield/Fidelity is an independent financial-analysis project that asks two decision questions conventional yield interfaces do not answer:
@@ -46,7 +48,7 @@ Once the gate passes, the dashboard reports:
 - a signed annualized yield-gap estimate; and
 - a recommended next action matched to the evidence state.
 
-The annualized gap is `Σ TVL × (expected APY − realized APY)`. It is an extrapolated comparison used to prioritize review—not a forecast, realized loss, or promise of future performance.
+The annualized gap is `Σ TVL × (expected APY − realized APY)`. It is an extrapolated comparison used to prioritize review. It is not a forecast, realized loss, or promise of future performance.
 
 ## Current evidence state
 
