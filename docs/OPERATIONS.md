@@ -1,5 +1,7 @@
 # Operations runbook
 
+This runbook covers releasing, monitoring, retrying, and rolling back the production deployment.
+
 ## Release sequence
 
 1. Create a Supabase project and apply every file in `supabase/migrations/` in filename order.

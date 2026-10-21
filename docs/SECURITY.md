@@ -1,5 +1,7 @@
 # Security model
 
+This document lists the credential and data boundaries of Yield/Fidelity and how to report a vulnerability.
+
 - Supabase service-role credentials are server-only and are required only by the scraper.
 - Dashboard and export access use the anonymous key and read-only RLS policies.
 - Ingestion RPCs (`begin_scrape_run`, `ingest_vault_snapshots`) are `EXECUTE`-revoked from `PUBLIC`, `anon`, and `authenticated`; only the service role may call them.

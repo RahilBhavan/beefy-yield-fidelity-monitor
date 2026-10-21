@@ -1,129 +1,111 @@
-# Yield/Fidelity
+# Yield/Fidelity: checks whether the 50 largest Beefy vaults on Base earn their reported APY
 
-[![CI](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml)
+[![CI](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An independent DeFi observability dashboard that compares Beefy vault headline yield with realized on-chain price-per-share (PPS) growth on Base. It also estimates how long a deposit needs to overcome entry and exit costs, making gas and strategy drift visible before they become surprises.
+**Live:** https://yield.rahilbhavan.com
 
-> Independent portfolio project by [Rahil Bhavan](https://github.com/RahilBhavan). Not affiliated with or endorsed by Beefy.
+![The live Yield/Fidelity dashboard on 21 Oct 2026. It flags 3 vaults for review, with $13.9M of capital analyzed and an $89.5K annualized gap between expected and realized yield.](docs/images/dashboard.png)
 
-**[Live dashboard](https://yield.rahilbhavan.com/dashboard)** · **[Complete project guide](docs/PROJECT_GUIDE.md)** · **[Project case study](docs/CASE_STUDY.md)** · **[Methodology](https://yield.rahilbhavan.com/methodology)**
+Yield/Fidelity is a Next.js dashboard for active Beefy vaults on the Base network. Once a day, it reads each vault's price per share (PPS) on-chain and stores the reading with its block provenance in Supabase. It then compares realized PPS growth with the APY that Beefy reported over the same intervals. It also has a calculator that estimates how many days a deposit needs to earn back its Base entry and exit costs.
 
-## Three-minute demo
+## What it does
 
-1. Open the [calculator](https://yield.rahilbhavan.com/), choose a Base vault, and change the deposit amount. Switch the APY input between the live headline, the time-weighted recorded APY and realized share-price growth, and compare the break-even days and sensitivity scenarios.
-2. Open the [dashboard](https://yield.rahilbhavan.com/dashboard). Check the latest snapshot time and coverage before reading the portfolio summary or opening exception review.
-3. Open the [methodology](https://yield.rahilbhavan.com/methodology) and download the [observation CSV](https://yield.rahilbhavan.com/api/export). The export contains the valid observations behind the rolling 90-day analysis window, including block and provider provenance.
+- **Tracks up to 50 vaults.** `src/lib/beefy.ts` selects the 50 largest active Beefy vaults on Base by TVL (`limit = 50`). On 21 Oct 2026, `/api/health` reported 50 tracked vaults and 100% snapshot coverage.
+- **Compares realized and reported yield.** For each interval, the expected return uses the APY recorded at the start of that interval, not today's APY. The method is in `src/lib/drift.ts`.
+- **Withholds results until the evidence is sufficient.** A vault gets a drift result only after at least 3 valid observations that span at least 7 days. A vault goes to review when its drift is −5% or lower.
+- **Summarizes the portfolio.** The dashboard shows capital analyzed, TVL-weighted expected and realized APY, an annualized yield gap (`Σ TVL × (expected APY − realized APY)`), and a recommended action.
+- **Estimates break-even days.** The calculator at `/` can use the live headline APY, the time-weighted recorded APY, or realized share-price growth. It shows downside, current, and upside scenarios.
+- **Exposes its evidence.** `/api/export` returns the valid observations from the rolling 90-day window as CSV or JSON. `/api/health` reports RPC, freshness, and coverage status.
 
-The live vault set and metrics change with market data and daily collection. If the dashboard reports stale or incomplete data, treat its historical variance as a review lead rather than a current recommendation. The [case study](docs/CASE_STUDY.md) explains the design and includes resume-ready project descriptions.
+Observed on the live site on 21 Oct 2026: about $13.8M of capital analyzed, 3–5 vaults flagged for review, and an $89.5K annualized gap. Capital analyzed ranged from $13.7M to $13.9M across fetches that day. These values change with each daily snapshot and do not come from a file in this repository.
 
-## Why it matters
+## How it works
 
-Yield interfaces usually emphasize a current APY. That number does not tell a user whether transaction costs overwhelm a small position or whether a vault has actually compounded at the advertised rate. Yield/Fidelity turns those questions into two inspectable outputs:
+1. Vercel Cron calls `/api/cron/scrape` daily at 01:15 UTC (`vercel.json`). The route requires the `CRON_SECRET` bearer token.
+2. `src/lib/beefy.ts` loads vault, APY, TVL, and price data from the Beefy API.
+3. `src/lib/pps.ts` reads `getPricePerFullShare()` and `decimals()` for every vault in one Multicall at a single Base block.
+4. Ingestion functions in `supabase/migrations/` write snapshots, failures, and the run status in one transaction. Unique keys on `(chain, run_date)` and `(vault_id, snapshot_date)` make a retry safe.
+5. `src/lib/drift.ts` and `src/lib/dashboard.ts` compute interval-matched drift, the evidence gate, and the portfolio summary for `src/app/dashboard/`.
 
-- **Break-even horizon:** estimated days for effective daily yield to recover Base entry and exit costs.
-- **Strategy drift:** realized PPS growth versus the APY recorded during each measurement interval.
+The [project guide](docs/PROJECT_GUIDE.md) has the full architecture diagram, formulas, and database model.
 
-The management summary converts those outputs into analysis coverage, capital reviewed, portfolio-weighted performance, an annualized yield-gap estimate, and an evidence-aware recommended action.
+## Run it
 
-The project deliberately separates planning estimates from observed facts. Gas results disclose their assumptions; drift results are withheld until the data passes a minimum validity window.
-
-## Engineering highlights
-
-- Reads vault PPS directly from Base contracts with Ethers v6 and records block, contract, provider, raw value, decimals, TVL, and scrape-run provenance.
-- Compounds expected growth using the APY stored with each observation instead of applying today's APY retroactively.
-- Rejects invalid observations and requires at least three valid samples spanning seven days before publishing drift.
-- Uses idempotent, authenticated cron ingestion backed by PostgreSQL constraints and row-level security.
-- Exposes operational health and reproducible CSV export endpoints alongside the dashboard.
-- Includes unit, integration, database, browser, accessibility, and load-smoke verification commands; CI runs the deterministic unit, database, browser, accessibility, build, and dependency checks.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    Cron["Vercel Cron"] --> Scraper["Authenticated scrape route"]
-    Beefy["Beefy API"] --> Scraper
-    Base["Base RPC / vault contracts"] --> Scraper
-    Scraper --> Gate["Validation + provenance gate"]
-    Gate --> Postgres["Supabase Postgres"]
-    Postgres --> Analysis["Interval-matched drift analysis"]
-    Beefy --> Calculator["Break-even calculator"]
-    Base --> Calculator
-    Analysis --> UI["Next.js dashboard"]
-    Calculator --> UI
-    Postgres --> Export["Health + CSV APIs"]
-```
-
-| Layer | Technology | Responsibility |
-| --- | --- | --- |
-| Web | Next.js 16, React 19, Tailwind CSS 4 | Server-rendered dashboard and interactive calculator |
-| Chain | Ethers v6, Base RPC | PPS reads, block provenance, and gas context |
-| Data | Supabase PostgreSQL | Vault state, immutable history, scrape runs, and RLS |
-| Operations | Vercel Cron, GitHub Actions | Daily ingestion, health monitoring, and verification |
-| Quality | Vitest, Playwright, axe-core, SQL tests | Logic, routes, accessibility, migrations, and invariants |
-
-## Correctness model
-
-For consecutive valid PPS observations, the monitor accumulates realized return in log space:
-
-```text
-realized log return += ln(current PPS / previous PPS)
-expected log return += ln(1 + observed APY) × interval days / 365
-relative drift = (realized return − expected return) / expected return
-```
-
-The expected APY comes from the earlier observation in each interval. A result is shown only after three valid observations span at least seven days. See the live [methodology page](https://yield.rahilbhavan.com/methodology) for assumptions and limitations.
-
-## Run locally
-
-Requirements: Node.js 20+ and a Supabase project for persistent monitoring data.
+Prerequisites: Node.js 20 or later (CI uses Node.js 20) and npm. The dashboard needs a Supabase project. The calculator works without one. The database tests need PostgreSQL 16 and `psql`.
 
 ```bash
 git clone https://github.com/RahilBhavan/beefy-yield-fidelity-monitor.git
 cd beefy-yield-fidelity-monitor
 npm ci
+npm run check    # lint, unit and route tests, production build
+```
+
+`npm run check` ran 46 Vitest tests on 21 Oct 2026: 45 passed and 1 skipped. The skipped test is the opt-in live integration test. The other suites:
+
+```bash
+npm run test:e2e           # 16 Playwright cases (8 tests × desktop and mobile Chromium), with axe WCAG A/AA checks
+npm run test:integration   # live Supabase and Base RPC test; needs credentials and network access
+npm run test:load          # smoke load on one endpoint (default /api/data); needs a running server
+```
+
+To run the app:
+
+```bash
 cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The calculator can use live public data without Supabase; the dashboard reports an explicit unconfigured state until read credentials and migrations are present.
-
-Apply the files in `supabase/migrations/` in order, then invoke the authenticated scraper to collect the first observation:
+Open http://localhost:3000. Without Supabase settings, the dashboard shows an explicit "unconfigured" state. To collect data, set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CRON_SECRET` in `.env.local`. Apply the files in `supabase/migrations/` in filename order. Then start the first scrape:
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/scrape
 ```
 
-`BASE_RPC_URLS` is optional. The application retains the public Base RPC as a fallback. Never expose the Supabase service-role key to browser code.
+`BASE_RPC_URLS` is optional. The public Base RPC is the fallback. Keep the service-role key out of browser code.
 
-## Verification
+CI (`.github/workflows/ci.yml`) runs `npm run check`, `npm audit --omit=dev`, every migration plus `supabase/tests/production_fidelity_test.sql` on PostgreSQL 16, and the Playwright suite.
 
-```bash
-npm run check             # lint, unit/route tests, production build
-npm run test:integration  # live Supabase/RPC contract integration (opt-in)
-npm run test:e2e          # Chromium flows + WCAG A/AA checks
-npm run test:load         # health/data/export smoke load
-```
+## Repository layout
 
-CI also applies every migration to PostgreSQL 16, runs database invariants, audits production dependencies, and executes browser tests. The live integration suite is intentionally opt-in because it requires external credentials and network access.
+- `src/app/`: pages (`/`, `/dashboard`, `/dashboard/strategies`, `/methodology`) and API routes (`cron/scrape`, `data`, `export`, `gas-estimate`, `health`).
+- `src/components/`: calculator, portfolio table, and drift chart.
+- `src/lib/`: Beefy adapter, PPS reads, gas model, drift method, and dashboard analysis, with their unit tests.
+- `supabase/migrations/`: PostgreSQL schema, row-level security, and ingestion functions.
+- `supabase/tests/`: database invariant tests.
+- `tests/e2e/`: Playwright and axe browser tests.
+- `scripts/`: the load-smoke script.
+- `docs/`: project documentation.
+- `.github/workflows/`: CI and a production health probe that runs every 15 minutes.
+- `PRD.md`: the product requirements document.
 
-## Operational surface
+## Documentation
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Friction-adjusted break-even calculator |
-| `/dashboard` | Coverage, freshness, and PPS drift |
-| `/dashboard/strategies` | Vaults at least 5% below the interval-matched target |
-| `/methodology` | Formulas, provenance, and limitations |
-| `/api/health` | Base RPC, data freshness, and snapshot coverage health |
-| `/api/export` | Reproducible export of the dashboard's rolling 90-day observation window |
-| `/api/cron/scrape` | Authenticated, idempotent daily ingestion |
+- [Project guide](docs/PROJECT_GUIDE.md): architecture, formulas, database model, API routes, and verification.
+- [Case study](docs/CASE_STUDY.md): the decision problem, the analytical approach, and the recommendation framework.
+- [Operations runbook](docs/OPERATIONS.md): release steps, service objectives, alerts, incident response, and rollback.
+- [Security model](docs/SECURITY.md): credential boundaries, row-level security, and rate limits.
+- [Methodology](https://yield.rahilbhavan.com/methodology): the public methodology page on the live site.
 
-Release checks, freshness objectives, rollback steps, and incident response live in [docs/OPERATIONS.md](docs/OPERATIONS.md). The threat model and secret boundaries are documented in [docs/SECURITY.md](docs/SECURITY.md).
+## Sources
 
-## Current scope
+- **Beefy API.** vault list, APY, TVL, performance fee, and token prices. Each daily snapshot stores the APY and TVL from that run.
+- **Base chain.** PPS and decimals read from each vault contract through Multicall. Each snapshot records the block number, block hash, and RPC provider label.
+- **Date range.** Production collection started in August 2026 and adds one snapshot per vault per UTC day. The project does not backfill history.
+- **Freezing.** The database keeps every snapshot. `/api/export` publishes the rolling 90-day window with its provenance, so you can recompute the dashboard figures.
 
-The current MVP monitors active Beefy vaults on Base. Multi-chain coverage, wallet-specific transaction simulation in the UI, token-price risk, impermanent loss, slippage, bridge costs, taxes, and future APY prediction are outside the present scope. Results are informational and are not financial advice.
+Beefy data belongs to Beefy. The MIT license covers this project's code, not third-party data, names, or marks.
 
-The production collector began accumulating observations in August 2026. The dashboard publishes variance analysis only for vaults with at least three valid observations spanning seven days. Its recommendation also checks that the latest snapshot is under 36 hours old and covers at least 95% of tracked vaults. Historical APY inputs above 1,000% are retained in the export but excluded from interval analysis as upstream anomalies.
+## Scope and limits
 
-Released under the [MIT License](LICENSE). Yield/Fidelity is an independent project and is not affiliated with or endorsed by Beefy; downstream use remains responsible for applicable third-party names, marks, and data terms.
+- Independent portfolio project. Not affiliated with or endorsed by Beefy.
+- Decision support, not financial advice. A flagged vault is a variance to investigate, not a conclusion about its cause.
+- Base only. The project does not model token-price exposure, impermanent loss, slippage, bridge costs, taxes, exploit risk, or future APY.
+- The gas estimate uses representative 500,000-gas deposit and withdrawal transactions. It is not a wallet-specific quote.
+- Short windows make annualized figures volatile. Interval APY inputs above 1,000% stay in the export but are left out of the analysis.
+- Live figures change daily. This README gives each live figure with the date it was observed.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+Part of [Rahil Bhavan's projects](https://github.com/RahilBhavan).
