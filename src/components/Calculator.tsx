@@ -131,7 +131,7 @@ export function Calculator() {
     const activeRate = rateOptions.length > 0 ? resolveRateOption(rateBasis, rateOptions) : null;
     const activeApy = activeRate?.apy ?? null;
 
-    const calculations = useMemo(() => {
+    const calculations = (() => {
         if (activeApy === null || !gasData || rawDeposit <= 0) return null;
         const result = calculateBreakEven(
             rawDeposit,
@@ -148,9 +148,9 @@ export function Calculator() {
             breakEvenDays: result.breakEvenDays,
             willNeverBreakEven: result.breakEvenDays === null,
         };
-    }, [activeApy, gasData, rawDeposit]);
+    })();
 
-    const scenarios = useMemo(() => {
+    const scenarios = (() => {
         if (activeApy === null || !gasData || rawDeposit <= 0) return [];
         return buildBreakEvenScenarios(
             rawDeposit,
@@ -158,7 +158,7 @@ export function Calculator() {
             gasData.entryCostUsd,
             gasData.exitCostUsd,
         );
-    }, [activeApy, gasData, rawDeposit]);
+    })();
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
     const formatPercentage = (val: number) => (val * 100).toFixed(2) + '%';
