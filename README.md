@@ -10,7 +10,7 @@ Yield/Fidelity is a Next.js dashboard for active Beefy vaults on the Base networ
 
 ## What it does
 
-- **Tracks up to 50 vaults.** `src/lib/beefy.ts` selects the 50 largest active Beefy vaults on Base by TVL (`limit = 50`). On 21 Oct 2026, `/api/health` reported 50 tracked vaults and 100% snapshot coverage.
+- **Tracks up to 50 vaults.** `src/lib/beefy.ts` selects the 50 largest active Beefy vaults on Base by TVL (`limit = 50`). On 21 Oct 2026, `/api/health` reported 50 tracked vaults and 100% snapshot coverage. On 24 Oct 2026 it reported 26 tracked vaults and 100% coverage, so the tracked count depends on which vaults are active and have a snapshot.
 - **Compares realized and reported yield.** For each interval, the expected return uses the APY recorded at the start of that interval, not today's APY. The method is in `src/lib/drift.ts`.
 - **Withholds results until the evidence is sufficient.** A vault gets a drift result only after at least 3 valid observations that span at least 7 days. A vault goes to review when its drift is −5% or lower.
 - **Summarizes the portfolio.** The dashboard shows capital analyzed, TVL-weighted expected and realized APY, an annualized yield gap (`Σ TVL × (expected APY − realized APY)`), and a recommended action.
