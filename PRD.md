@@ -50,6 +50,7 @@ additional networks.
 - **Reliability SLO**: At least 99.5% successful daily scrapes over a 30-day operating window.
 - **Freshness SLO**: Latest valid observation is less than 36 hours old.
 - **Coverage SLO**: At least 95% of requested vaults produce valid daily observations.
+- **Vault scope**: The collector requests every Beefy vault on Base with status `active`, capped at the 50 largest by TVL. As of 2026-10-24, Beefy listed 26 active Base vaults (200 paused, 311 eol), so 26 are tracked; the 50 is a ceiling.
 - **Decision Integrity**: No drift result or recommendation is published before the evidence gate passes.
 - **Reproducibility**: Every displayed drift result can be reconstructed from the public export and recorded provenance.
 
