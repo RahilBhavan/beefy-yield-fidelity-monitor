@@ -1,4 +1,4 @@
-# Yield/Fidelity: checks whether the 50 largest Beefy vaults on Base earn their reported APY
+# Yield/Fidelity: checks whether active Beefy vaults on Base earn their reported APY
 
 [![CI](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -10,7 +10,7 @@ Yield/Fidelity is a Next.js dashboard for active Beefy vaults on the Base networ
 
 ## What it does
 
-- **Tracks up to 50 vaults.** `src/lib/beefy.ts` selects the 50 largest active Beefy vaults on Base by TVL (`limit = 50`). On 21 Oct 2026, `/api/health` reported 50 tracked vaults and 100% snapshot coverage.
+- **Tracks every active Base vault, up to 50.** `src/lib/beefy.ts` keeps Beefy vaults on Base with status `active`, sorts them by TVL and takes the largest 50 (`limit = 50`). The cap is a ceiling, not a target. On 24 Oct 2026, Beefy's public `/vaults` endpoint listed 537 Base vaults: 26 `active`, 200 `paused` and 311 `eol`. The live `/api/health` reported 26 tracked vaults and 100% snapshot coverage the same day, so the count matches Beefy's active list. On 21 Oct 2026 `/api/health` had reported 50; I did not record Beefy's list that day, so I cannot say which vaults left. Each daily run marks vaults missing from the active list inactive (`is_active = false`).
 - **Compares realized and reported yield.** For each interval, the expected return uses the APY recorded at the start of that interval, not today's APY. The method is in `src/lib/drift.ts`.
 - **Withholds results until the evidence is sufficient.** A vault gets a drift result only after at least 3 valid observations that span at least 7 days. A vault goes to review when its drift is −5% or lower.
 - **Summarizes the portfolio.** The dashboard shows capital analyzed, TVL-weighted expected and realized APY, an annualized yield gap (`Σ TVL × (expected APY − realized APY)`), and a recommended action.
