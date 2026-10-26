@@ -1,0 +1,12 @@
+{
+  "snapshots": [
+    {
+      "snapshotDate": "2026-10-25",
+      "file": "2026-10-25.json",
+      "capitalAnalyzedUsd": 3169372.8755716947,
+      "vaultsRequiringReview": 3,
+      "annualizedGapUsd": 91761.30907977631,
+      "trackedVaults": 26
+    }
+  ]
+}

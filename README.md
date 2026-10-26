@@ -15,9 +15,18 @@ Yield/Fidelity is a Next.js dashboard for active Beefy vaults on the Base networ
 - **Withholds results until the evidence is sufficient.** A vault gets a drift result only after at least 3 valid observations that span at least 7 days. A vault goes to review when its drift is −5% or lower.
 - **Summarizes the portfolio.** The dashboard shows capital analyzed, TVL-weighted expected and realized APY, an annualized yield gap (`Σ TVL × (expected APY − realized APY)`), and a recommended action.
 - **Estimates break-even days.** The calculator at `/` can use the live headline APY, the time-weighted recorded APY, or realized share-price growth. It shows downside, current, and upside scenarios.
-- **Exposes its evidence.** `/api/export` returns the valid observations from the rolling 90-day window as CSV or JSON. `/api/health` reports RPC, freshness, and coverage status.
+- **Exposes its evidence.** `/api/export` returns the valid observations from the rolling 90-day window as CSV or JSON. `/api/health` reports RPC, freshness, and coverage status. `/api/summary` returns the dated headline figures that the snapshot archive stores.
 
-Observed on the live site on 21 Oct 2026: about $13.8M of capital analyzed, 3–5 vaults flagged for review, and an $89.5K annualized gap. Capital analyzed ranged from $13.7M to $13.9M across fetches that day. These values change with each daily snapshot and do not come from a file in this repository.
+Headline figures, as of 25 Oct 2026 (UTC date of the latest daily snapshot, [`snapshots/2026-10-25.json`](snapshots/2026-10-25.json)):
+
+| Figure | Value |
+| --- | --- |
+| Capital analyzed | $3.17M (9 of 26 vaults pass the evidence gate) |
+| Vaults requiring review | 3 |
+| Annualized gap | $91.8K |
+| Tracked vaults | 26 |
+
+These values move with every daily snapshot. The dated [snapshot archive](snapshots/) keeps each day's figures in the repository, so a number quoted anywhere can be traced to a date. Earlier figures differ: the 21 Oct 2026 capture showed an $89.5K gap on 50 tracked vaults, before Beefy's active list shrank to 26. That capture was not archived. The 25 Oct file was recomputed from the public `/api/export` rows with the dashboard code, and it matches the live dashboard ($3.2M, 11.52% expected, 8.62% realized, $91.8K, 3 vaults). Later files come from `/api/summary` on the live site.
 
 ## How it works
 
@@ -40,9 +49,10 @@ npm ci
 npm run check    # lint, unit and route tests, production build
 ```
 
-`npm run check` ran 46 Vitest tests on 21 Oct 2026: 45 passed and 1 skipped. The skipped test is the opt-in live integration test. The other suites:
+`npm run check` ran 53 Vitest tests on 25 Oct 2026: 52 passed and 1 skipped. The skipped test is the opt-in live integration test. The other suites:
 
 ```bash
+npm run snapshot           # write snapshots/<as-of date>.json from the live /api/summary
 npm run test:e2e           # 16 Playwright cases (8 tests × desktop and mobile Chromium), with axe WCAG A/AA checks
 npm run test:integration   # live Supabase and Base RPC test; needs credentials and network access
 npm run test:load          # smoke load on one endpoint (default /api/data); needs a running server
@@ -55,10 +65,10 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000. Without Supabase settings, the dashboard shows an explicit "unconfigured" state. To collect data, set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CRON_SECRET` in `.env.local`. Apply the files in `supabase/migrations/` in filename order. Then start the first scrape:
+Open the URL that `npm run dev` prints (Next.js uses port 3000 unless it is taken). Without Supabase settings, the dashboard shows an explicit "unconfigured" state. To collect data, set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CRON_SECRET` in `.env.local`. Apply the files in `supabase/migrations/` in filename order. Then start the first scrape, with `APP_URL` set to the URL `npm run dev` printed:
 
 ```bash
-curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/scrape
+curl -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/scrape"
 ```
 
 `BASE_RPC_URLS` is optional. The public Base RPC is the fallback. Keep the service-role key out of browser code.
@@ -73,7 +83,8 @@ CI (`.github/workflows/ci.yml`) runs `npm run check`, `npm audit --omit=dev`, ev
 - `supabase/migrations/`: PostgreSQL schema, row-level security, and ingestion functions.
 - `supabase/tests/`: database invariant tests.
 - `tests/e2e/`: Playwright and axe browser tests.
-- `scripts/`: the load-smoke script.
+- `snapshots/`: one JSON file per as-of date with the headline figures, plus `index.json`.
+- `scripts/`: the snapshot writer and the load-smoke script.
 - `docs/`: project documentation.
 - `.github/workflows/`: CI and a production health probe that runs every 15 minutes.
 - `PRD.md`: the product requirements document.
@@ -102,7 +113,7 @@ Beefy data belongs to Beefy. The MIT license covers this project's code, not thi
 - Base only. The project does not model token-price exposure, impermanent loss, slippage, bridge costs, taxes, exploit risk, or future APY.
 - The gas estimate uses representative 500,000-gas deposit and withdrawal transactions. It is not a wallet-specific quote.
 - Short windows make annualized figures volatile. Interval APY inputs above 1,000% stay in the export but are left out of the analysis.
-- Live figures change daily. This README gives each live figure with the date it was observed.
+- Live figures change daily. This README gives each headline figure with its as-of date and the archived file it comes from. Only 25 Oct 2026 is archived so far. The archive is written by running `npm run snapshot`; no scheduled job commits to it.
 
 ## License
 
