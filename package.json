@@ -15,7 +15,7 @@
     "check": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
+    "@supabase/supabase-js": "^2.118.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "ethers": "^6.17.0",
