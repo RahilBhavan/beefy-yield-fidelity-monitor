@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "snapshotDate": "2026-10-25",
+  "recordedAt": "2026-10-25T01:33:42.413+00:00",
+  "blockNumber": 53051337,
+  "capturedAt": "2026-10-26T01:25:57.928Z",
+  "source": "https://yield.rahilbhavan.com/api/export?format=json",
+  "method": "recomputed-from-api-export",
+  "figures": {
+    "capitalAnalyzedUsd": 3169372.8755716947,
+    "vaultsRequiringReview": 3,
+    "annualizedGapUsd": 91761.30907977631,
+    "trackedVaults": 26,
+    "readyVaults": 9,
+    "expectedApy": 0.11515777973061682,
+    "realizedApy": 0.08620526682592293
+  }
+}

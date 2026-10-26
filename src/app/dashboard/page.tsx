@@ -17,6 +17,8 @@ import { baseChain } from '@/lib/chains';
 
 export const revalidate = 300;
 
+const SNAPSHOT_ARCHIVE_URL = 'https://github.com/RahilBhavan/beefy-yield-fidelity-monitor/tree/main/snapshots';
+
 export const metadata: Metadata = {
     title: 'Dashboard',
     description: 'Portfolio yield, price-per-share performance, exception review, and data quality for active Beefy vaults on Base.',
@@ -112,6 +114,12 @@ export default async function Dashboard() {
                         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#FE5238]">Management insight</p>
                         <h2 id="management-insight" className="mt-3 max-w-2xl text-3xl font-black leading-[1.05] tracking-tight md:text-4xl">{decisionTitle}</h2>
                         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#D6D6D6]/70">{decisionDetail}</p>
+                        {data.updatedAt && (
+                            <p className="mt-3 font-mono text-[11px] uppercase tracking-wide text-[#D6D6D6]/70">
+                                Figures as of {new Date(data.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} UTC ·{' '}
+                                <a href={SNAPSHOT_ARCHIVE_URL} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-[#FE5238]">Snapshot archive</a>
+                            </p>
+                        )}
                         {isReady && (
                             <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-[#D6D6D6]/15 pt-6 sm:grid-cols-4">
                                 <InlineMetric label="Capital analyzed" value={compactCurrency.format(data.analyzedTvl)} />

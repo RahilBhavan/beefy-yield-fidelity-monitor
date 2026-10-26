@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:integration": "RUN_INTEGRATION_TESTS=1 vitest run src/lib/pps.integration.test.ts",
     "test:e2e": "playwright test",
+    "snapshot": "node scripts/snapshot.mjs",
     "test:load": "node scripts/load-smoke.mjs",
     "check": "npm run lint && npm run test && npm run build"
   },
