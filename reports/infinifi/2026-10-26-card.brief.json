@@ -1,0 +1,43 @@
+{
+  "artifact": {
+    "path": "reports/infinifi/2026-10-26-card.png",
+    "sha256": "f66b5caeb3c7a276bdabad3e4281cb36ab9de25914957216de97b6699fff894b",
+    "size": "1080x1080"
+  },
+  "built_from": {
+    "report": "reports/infinifi/2026-10-26.json",
+    "report_sha256": "fb571c78a5cb2d3b2f3c5c621b4acaacd41078cbe28d618af4d85a3ae2c15cf4",
+    "generator": "scripts/infinifi/card.mjs",
+    "card_html_sha256": "6dd8a753cd42cad6d0ff22a03883207a734be5efcb671f12da735f3aecb643d7",
+    "render": "Firefox (Playwright 1.63.0) at 1080x1080, 1x, fonts embedded from the rahil-design bundle"
+  },
+  "design": {
+    "system": "rahil-design",
+    "version_checked_against": "3.11.0",
+    "version_named_in_request": "3.3.2",
+    "version_note": "The request named 3.3.2. The installed bundle is 3.11.0; its CHANGELOG says fonts, palette and identity have not changed since 3.3.2, so the card uses the same charcoal #111214, off-white #F5F5EF, yellow #FFE500, Anton and IBM Plex Sans. Checks ran against 3.11.0.",
+    "tokens_sha256": "e3e929a54479270d35db0079d4527ec816d19c6119557186d089442f8e91da5a",
+    "accent": "yellow marks the one value the title names (siUSD earned 6.37%) and has a charcoal outline; no other accent"
+  },
+  "checks": {
+    "design_check_system": "ok (rahil-design@3.11.0: 19 contrast pairs, 5 pairs x 3 CVD simulations, 15 colours, 0 errors)",
+    "design_check_lint": "ok on scripts/infinifi/card.mjs and the rendered card.html",
+    "measure": "no overflow; token fonts drawn; every glyph present in the bundled fonts; text contrast >= 4.5:1; figure content fits its box",
+    "pixel_audit": "0.00% of pixels off-system (limit 0.01%)",
+    "font_sizes_px": {
+      "title": 96,
+      "values": 72,
+      "labels_and_gap": 60,
+      "kickers": 48,
+      "notes": 44,
+      "footer": 28
+    },
+    "feed_floor_check": "FAILS: design_check.py feed scales the 1080px canvas into the 326px feed box: smallest text 28px -> 8.5px (floor 18px), title 96px -> 29px (floor 40px). Data labels are 44-72px (13-22px at 326px). The card meets the square format tokens (headline 84, body 34, caption 28) but not the phone-card floors.",
+    "lie_factor": "1.00: bars are zero-based; the APY bars share one scale (372px = 8%); the reserve bar is a separate full-width 0-100% bar"
+  },
+  "phone_inspection": "Downscaled the exact PNG to 390px and 326px and looked at both. At 390px the title, bar labels, 6.41%/6.37%/15.4% and the gap line read clearly; kickers and the liUSD note are small but legible; the footer is fine print. At 326px the title and the three numbers read; kickers and the note are marginal; the footer is not legible.",
+  "post_to_image_agreement": "Not applicable: no post text was written or approved. The card figures equal reports/infinifi/2026-10-26.json (cardText() in scripts/infinifi/card.mjs reads them, and card.test.mjs pins the strings).",
+  "review_status": "pending",
+  "review_note": "Design review pending. No named reviewer has passed these exact bytes, the phone-floor check fails, and review_record.py cannot pass a 1080px card (its gate re-renders 390px cards). Not approved for publication; nothing has been posted.",
+  "alt": "Card titled 'siUSD earned 6.37% vs 6.41% published'. A bar for siUSD over the 30 days to 26 October 2026 shows the 30-day APY infiniFi publishes, 6.41%, in gray, and the APY earned from siUSD's on-chain share price, 6.37%, in yellow; the gap is -0.04 percentage points. A note says six locked liUSD buckets show gaps of -0.01 to -0.03 points. Below, the reserve ratio is 15.4%: $10.68M of liquid reserves against $69.26M of deposits, shown as a bar with the liquid part in black. Footer: Ethereum blocks 26,061,915 to 26,277,150, 26 September to 26 October 2026, 13:26 UTC; reserves read at block 26,277,150; sources are infiniFi docs, infiniFi API and Ethereum RPC."
+}

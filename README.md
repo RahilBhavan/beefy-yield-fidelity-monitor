@@ -75,6 +75,47 @@ curl -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/scrape"
 
 CI (`.github/workflows/ci.yml`) runs `npm run check`, `npm audit --omit=dev`, every migration plus `supabase/tests/production_fidelity_test.sql` on PostgreSQL 16, and the Playwright suite.
 
+## infiniFi fidelity check
+
+An outreach artifact that applies the same test to [infiniFi](https://docs.infinifi.xyz), an Ethereum stablecoin protocol: does the APY it publishes match what its share prices paid? It also reads the protocol's reserve ratio. Every figure is read from Ethereum or from infiniFi's own pages on the day of the run, and the report lists anything it could not read instead of estimating it.
+
+![Chart card for 26 Oct 2026. siUSD earned 6.37% over 30 days against 6.41% published, a gap of 0.04 percentage points. The liquid reserve is 15.4% of deposits.](reports/infinifi/2026-10-26-card.png)
+
+Result for 26 Oct 2026, 13:26:23 UTC (Ethereum block 26,277,150, [`reports/infinifi/2026-10-26.json`](reports/infinifi/2026-10-26.json)):
+
+| siUSD window | Published APY | Realized APY | Gap (points) |
+| --- | --- | --- | --- |
+| 30 days, block 26,061,915 (26 Sep 13:26 UTC) to 26,277,150 | 6.41% | 6.37% | −0.04 |
+| 7 days, block 26,226,910 (19 Oct) to 26,277,150 | 6.58% | 6.56% | −0.02 |
+| 1 day, block 26,269,982 (25 Oct) to 26,277,150 | 6.62% | 6.63% | +0.00 |
+
+- **The longest window with a published figure is 30 days.** infiniFi's API publishes 1-, 7- and 30-day averages and no history, so the published side of any longer window is missing. For siUSD's whole life the report gives only the realized figure: 6.68% a year over 521.7 days from the first block with siUSD supply (block 22,540,590, 22 May 2025, a 1 iUSD seed), or 6.71% from the first block where the share price moved (block 22,556,133, 25 May 2025). The share price did not fall in any of 76 weekly samples.
+- **The gap is small next to normal movement.** The annualized growth of one day ranged with a standard deviation of 0.54 points over the 30 days. The 30-day gap is 0.62% of the return the published APY implied; the dashboard's review line is −5%.
+- **Locked tokens agree too.** Six of the 13 liUSD buckets hold more than 10,000 iUSD (the rest hold about 1.2 iUSD each and are not evaluated). Their 7-day gaps are 0.00 points and their 30-day gaps run from −0.01 to −0.03 points. Each 30-day realized figure is below the published one.
+- **Reserve ratio: 15.42%.** The three liquid farms in the registry held 10,680,192.86 USDC against 69,260,083.53 iUSD outstanding at block 26,277,150. Counting the instant liquidity that maturity farms report, mostly from one farm, the ratio is 26.31%. infiniFi's API totals, fetched a minute later, differ from the on-chain liquid and illiquid sums by $1.05 and $1.79.
+
+### Method
+
+```bash
+npm run infinifi                       # writes reports/infinifi/<UTC date>.json; takes about 5 minutes
+node scripts/infinifi/card.mjs reports/infinifi/<date>.json card.html FONTS_DIR   # the 1080x1080 card source
+```
+
+- **Addresses** come from infiniFi's [contract page](https://docs.infinifi.xyz/dev-docs/contracts.md): iUSD, siUSD, Gateway, Farm Registry and the liUSD tokens. The run parses the page and records its hash. Farm names come from the docs [vaults page](https://docs.infinifi.xyz/vaults.md); a farm that page does not name stays unnamed.
+- **Realized APY** is `expm1(ln(endRate / startRate) × 365 / days)`, the interval arithmetic in `src/lib/drift.ts` (a test checks the two agree). The siUSD rate is `convertToAssets(1e18)`. The liUSD rate is `LockingController.exchangeRate(weeks)`. Windows run from the block at or before the start time to a block 2 behind the head, so every read has settled.
+- **Published APY** is the `average1dAPY`, `average7dAPY` and `average30dAPY` fields of `https://eth-api.infinifi.xyz/api/protocol/data`. The gap is realized minus published, in percentage points.
+- **Reserve ratio** is the USDC held by farms the registry lists as liquid, divided by the iUSD supply, taken at par with USDC. It reads `FarmRegistry.getAssetTypeFarms` and each farm's `assets()` and `liquidity()`.
+- **Two providers must agree.** Every chain read is repeated on independent public RPC providers until two return the same answer; a read with no agreement fails the run. The report names the providers that agreed.
+
+### Limits
+
+- **The API endpoint is not in infiniFi's docs.** The docs point to a backend repository that is not public. I could not open the app (it sits behind a browser check), so I cannot say which of these fields it shows.
+- **Agreement is not independent proof.** The 7-day published figures for the locked tokens match the share price to within 0.0001 points, so the API appears to derive its averages from the same exchange rates. The check shows that infiniFi's arithmetic is consistent and that depositors received the share-price growth; it does not test the returns of the farms underneath.
+- **The locking controller is not in the docs.** Its address (`0x1d95cC100D6Cd9C7BbDbD7Cb328d99b3D6037fF7`) is read from the documented Gateway, and the run accepts it only if its share tokens are the liUSD addresses the docs list.
+- **One snapshot.** The reserve ratio is the state at one block. It does not model redemption queues, Aave utilization, the Curve exit route, or the credit risk of the maturity farms. `liquidity()` is each farm's own claim about instant withdrawals.
+- **iUSD is taken at par.** The API reports an iUSD exchange rate of 1; I did not read a par price on-chain.
+- **Design review is pending.** The card follows Rahil Design's palette and type (checked against bundle 3.11.0; the request named 3.3.2, which has the same fonts and palette). It fails the bundle's 326px phone-feed floors for small text, no reviewer has passed the exact bytes, and nothing has been posted. See [`reports/infinifi/2026-10-26-card.brief.json`](reports/infinifi/2026-10-26-card.brief.json).
+
 ## Repository layout
 
 - `src/app/`: pages (`/`, `/dashboard`, `/dashboard/strategies`, `/methodology`) and API routes (`cron/scrape`, `data`, `export`, `gas-estimate`, `health`).
@@ -84,7 +125,8 @@ CI (`.github/workflows/ci.yml`) runs `npm run check`, `npm audit --omit=dev`, ev
 - `supabase/tests/`: database invariant tests.
 - `tests/e2e/`: Playwright and axe browser tests.
 - `snapshots/`: one JSON file per as-of date with the headline figures, plus `index.json`.
-- `scripts/`: the snapshot writer and the load-smoke script.
+- `scripts/`: the snapshot writer, the load-smoke script and `infinifi/` (the infiniFi collector, card builder and their tests).
+- `reports/infinifi/`: the dated infiniFi report, its chart card and the card's design record.
 - `docs/`: project documentation.
 - `.github/workflows/`: CI and a production health probe that runs every 15 minutes.
 - `PRD.md`: the product requirements document.

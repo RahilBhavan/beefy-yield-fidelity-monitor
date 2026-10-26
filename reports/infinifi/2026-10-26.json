@@ -1,0 +1,1093 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-26T13:27:47.909Z",
+  "method": "Realised APY = expm1(ln(endRate / startRate) * 365 / days), the interval maths of src/lib/drift.ts. siUSD rate = convertToAssets(1e18) in iUSD; liUSD rate = LockingController.exchangeRate(weeks). Gap = realised minus advertised, in percentage points.",
+  "endBlock": {
+    "number": 26277150,
+    "hash": "0x47a3780753e3bde4c5157bd68628e89ca411b4ac9a915ef4e5895fc6c658aab7",
+    "timestamp": 1793021183,
+    "iso": "2026-10-26T13:26:23.000Z"
+  },
+  "sources": {
+    "docsContracts": {
+      "url": "https://docs.infinifi.xyz/dev-docs/contracts.md",
+      "httpDate": "Mon, 26 Oct 2026 13:26:57 GMT",
+      "fetchedAt": "2026-10-26T13:26:57.657Z",
+      "sha256": "dfee24afa9f8ceaca64fac5e9060395765e18a0be8165ed7ca081e6939498ea9"
+    },
+    "docsVaults": {
+      "url": "https://docs.infinifi.xyz/vaults.md",
+      "httpDate": "Mon, 26 Oct 2026 13:26:57 GMT",
+      "fetchedAt": "2026-10-26T13:26:57.868Z",
+      "sha256": "96b6eca8b089a5ae8853676a1f7abfed77852207c5f1931a5c10ae5fd284ecb8"
+    },
+    "api": {
+      "url": "https://eth-api.infinifi.xyz/api/protocol/data",
+      "httpDate": "Mon, 26 Oct 2026 13:26:58 GMT",
+      "fetchedAt": "2026-10-26T13:26:58.096Z",
+      "sha256": "62624ae99292742e17ebf15243622e1e6aee54868b34413bfe4f749f4d20eca3",
+      "unchangedOnRecheck": true
+    },
+    "rpcProvidersAgreeing": [
+      "https://eth.drpc.org",
+      "https://gateway.tenderly.co/public/mainnet",
+      "https://eth-mainnet.public.blastapi.io"
+    ]
+  },
+  "contracts": {
+    "gateway": "0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5",
+    "core": "0xF6d48735EcCf12bDC1DF2674b1ce3fcb3bD25490",
+    "iUSD": "0x48f9e38f3070AD8945DFEae3FA70987722E3D89c",
+    "siUSD": "0xDBDC1Ef57537E34680B898E1FEBD3D68c7389bCB",
+    "farmRegistry": "0xF5f2718708f471e43968271956CC01aaA8c46119",
+    "lockedTokens": {
+      "1": "0x12b004719fb632f1E7c010c6F5D6009Fb4258442",
+      "2": "0xf1839BeCaF586814D022F16cDb3504ff8D8Ff361",
+      "3": "0xed2a360FfDC1eD4F8df0bd776a1FfbbE06444a0A",
+      "4": "0x66bCF6151D5558AfB47c38B20663589843156078",
+      "5": "0xf0c4A78fEbf4062aeD39A02BE8a4C72E9857d7d1",
+      "6": "0xb06Cc4548FebfF3D66a680F9c516381c79bC9707",
+      "7": "0x3A744A6b57984eb62AeB36eB6501d268372cF8bb",
+      "8": "0xf68b95b7e851170c0e5123a3249dD1Ca46215085",
+      "9": "0xBB5cA732fAfEd8870F9C0e8406Ad707939c912E1",
+      "10": "0xd15fbf48c6dDdADC9Ef0693B060d80aF51cC26d5",
+      "11": "0xed030a37Ec6EB308A416Dc64dD4b649A2BBE4FCd",
+      "12": "0x3D360aB96B942c1251Ab061178F731eFEbc2d644",
+      "13": "0xbd3f9814eB946E617f1d774A6762cDbec0bf087A"
+    },
+    "lockingController": {
+      "address": "0x1d95cC100D6Cd9C7BbDbD7Cb328d99b3D6037fF7",
+      "resolvedVia": "Gateway.getAddress(\"lockingController\") at 0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5",
+      "verifiedAgainstDocs": true
+    }
+  },
+  "siUSD": {
+    "address": "0xDBDC1Ef57537E34680B898E1FEBD3D68c7389bCB",
+    "advertised": {
+      "average1d": 0.0662286201800637,
+      "average7d": 0.06576704423735813,
+      "average30d": 0.06406802201264061
+    },
+    "apiExchangeRateMatchesChain": true,
+    "windows": {
+      "1": {
+        "days": 1,
+        "startBlock": 26269982,
+        "startTimestamp": 1792934783,
+        "startHash": "0xcaa642419d1367f8d018e887a6d7a80b73957e1b7b34bd92fdd7c37919adbfc6",
+        "startRate": 1.096653074676314,
+        "endRate": 1.0968458672678034,
+        "realizedApy": 0.06626478578566747,
+        "advertisedApy": 0.0662286201800637,
+        "gapPoints": 0.003616560560376625,
+        "driftPercent": 0.05289688350023568
+      },
+      "7": {
+        "days": 7,
+        "startBlock": 26226910,
+        "startTimestamp": 1792416383,
+        "startHash": "0x5f9e7766456c3dfd41e464cc9cd256b5a224407bcdb3f0dda17dbdda4b75d2b3",
+        "startRate": 1.0955108724512976,
+        "endRate": 1.0968458672678034,
+        "realizedApy": 0.06556252460697758,
+        "advertisedApy": 0.06576704423735813,
+        "gapPoints": -0.020451963038055354,
+        "driftPercent": -0.30149148158023487
+      },
+      "30": {
+        "days": 30,
+        "startBlock": 26061915,
+        "startTimestamp": 1790429183,
+        "startHash": "0x868dc66a08f88de885e007b921fdbc8df4c87d205be71c83fdc815ac391d6da5",
+        "startRate": 1.0912959861389369,
+        "endRate": 1.0968458672678034,
+        "realizedApy": 0.06366218347360254,
+        "advertisedApy": 0.06406802201264061,
+        "gapPoints": -0.04058385390380698,
+        "driftPercent": -0.6158584991235958
+      }
+    },
+    "history": {
+      "firstBlock": 22540590,
+      "firstTimestamp": 1747943135,
+      "firstHash": "0xbcadd0009644c075597c37cd3de5a76054a82f9e994e2e405b6d7b6934364fdb",
+      "firstRate": 1,
+      "firstSupplyIusd": 1,
+      "endRate": 1.0968458672678034,
+      "days": 521.7366666666667,
+      "advertisedApy": null,
+      "realizedApy": 0.06680570018149978,
+      "gapPoints": null,
+      "driftPercent": null,
+      "sinceFirstYield": {
+        "block": 22556133,
+        "timestamp": 1748131211,
+        "iso": "2025-05-25T00:00:11.000Z",
+        "hash": "0x47b5592d96cd6fbad069f7df2efcdbfa7ba875d49abf435271bd67d316ceff1c",
+        "startRate": 1.0000002189600516,
+        "days": 519.5598611111111,
+        "realizedApy": 0.06709461959512812
+      },
+      "weeklySamples": 76,
+      "worstWeeklyFall": 0,
+      "dailyApyDeviation": {
+        "count": 30,
+        "meanApy": 0.0636754507413273,
+        "standardDeviation": 0.00539945001267003
+      },
+      "weekly": [
+        {
+          "timestamp": 1747943135,
+          "block": 22540590,
+          "rate": 1
+        },
+        {
+          "timestamp": 1748265983,
+          "block": 22567252,
+          "rate": 1.0025884142173125
+        },
+        {
+          "timestamp": 1748870783,
+          "block": 22617277,
+          "rate": 1.004002229698233
+        },
+        {
+          "timestamp": 1749475583,
+          "block": 22667310,
+          "rate": 1.0043476663444921
+        },
+        {
+          "timestamp": 1750080383,
+          "block": 22717367,
+          "rate": 1.0064012529554558
+        },
+        {
+          "timestamp": 1750685183,
+          "block": 22767418,
+          "rate": 1.0084956032436503
+        },
+        {
+          "timestamp": 1751289983,
+          "block": 22817522,
+          "rate": 1.0098157983615355
+        },
+        {
+          "timestamp": 1751894783,
+          "block": 22867604,
+          "rate": 1.01111975739157
+        },
+        {
+          "timestamp": 1752499583,
+          "block": 22917704,
+          "rate": 1.0125487945225815
+        },
+        {
+          "timestamp": 1753104383,
+          "block": 22967855,
+          "rate": 1.0138940483357235
+        },
+        {
+          "timestamp": 1753709183,
+          "block": 23017930,
+          "rate": 1.0152357940785244
+        },
+        {
+          "timestamp": 1754313983,
+          "block": 23067990,
+          "rate": 1.0173699595050611
+        },
+        {
+          "timestamp": 1754918783,
+          "block": 23118096,
+          "rate": 1.0189217248684608
+        },
+        {
+          "timestamp": 1755523583,
+          "block": 23168229,
+          "rate": 1.0207778693837986
+        },
+        {
+          "timestamp": 1756128383,
+          "block": 23218411,
+          "rate": 1.0223190203430834
+        },
+        {
+          "timestamp": 1756733183,
+          "block": 23268574,
+          "rate": 1.0238468497739384
+        },
+        {
+          "timestamp": 1757337983,
+          "block": 23318663,
+          "rate": 1.0253678526417793
+        },
+        {
+          "timestamp": 1757942783,
+          "block": 23368767,
+          "rate": 1.0267826748428828
+        },
+        {
+          "timestamp": 1758547583,
+          "block": 23418854,
+          "rate": 1.0282634076056318
+        },
+        {
+          "timestamp": 1759152383,
+          "block": 23468936,
+          "rate": 1.0301196146507314
+        },
+        {
+          "timestamp": 1759757183,
+          "block": 23519018,
+          "rate": 1.0314509447085054
+        },
+        {
+          "timestamp": 1760361983,
+          "block": 23569077,
+          "rate": 1.032708243833144
+        },
+        {
+          "timestamp": 1760966783,
+          "block": 23619101,
+          "rate": 1.0339910229950444
+        },
+        {
+          "timestamp": 1761571583,
+          "block": 23669068,
+          "rate": 1.0355417475968276
+        },
+        {
+          "timestamp": 1762176383,
+          "block": 23719089,
+          "rate": 1.0369812333635648
+        },
+        {
+          "timestamp": 1762781183,
+          "block": 23769152,
+          "rate": 1.0386725836338608
+        },
+        {
+          "timestamp": 1763385983,
+          "block": 23819180,
+          "rate": 1.0401208654821696
+        },
+        {
+          "timestamp": 1763990783,
+          "block": 23869003,
+          "rate": 1.0415383878362567
+        },
+        {
+          "timestamp": 1764595583,
+          "block": 23918918,
+          "rate": 1.0426793337283033
+        },
+        {
+          "timestamp": 1765200383,
+          "block": 23968372,
+          "rate": 1.0437980892897891
+        },
+        {
+          "timestamp": 1765805183,
+          "block": 24018292,
+          "rate": 1.0448956989276037
+        },
+        {
+          "timestamp": 1766409983,
+          "block": 24068439,
+          "rate": 1.0460750711912878
+        },
+        {
+          "timestamp": 1767014783,
+          "block": 24118593,
+          "rate": 1.0472432069600626
+        },
+        {
+          "timestamp": 1767619583,
+          "block": 24168750,
+          "rate": 1.048459085225721
+        },
+        {
+          "timestamp": 1768224383,
+          "block": 24218922,
+          "rate": 1.0496700197036544
+        },
+        {
+          "timestamp": 1768829183,
+          "block": 24269110,
+          "rate": 1.0508405363102706
+        },
+        {
+          "timestamp": 1769433983,
+          "block": 24319294,
+          "rate": 1.052007336429212
+        },
+        {
+          "timestamp": 1770038783,
+          "block": 24369462,
+          "rate": 1.0532083240520789
+        },
+        {
+          "timestamp": 1770643583,
+          "block": 24419497,
+          "rate": 1.0541570124456137
+        },
+        {
+          "timestamp": 1771248383,
+          "block": 24469670,
+          "rate": 1.055059746821675
+        },
+        {
+          "timestamp": 1771853183,
+          "block": 24519878,
+          "rate": 1.055986013838358
+        },
+        {
+          "timestamp": 1772457983,
+          "block": 24570050,
+          "rate": 1.0569135576209494
+        },
+        {
+          "timestamp": 1773062783,
+          "block": 24620207,
+          "rate": 1.0579774109678393
+        },
+        {
+          "timestamp": 1773667583,
+          "block": 24670350,
+          "rate": 1.0590098711366127
+        },
+        {
+          "timestamp": 1774272383,
+          "block": 24720508,
+          "rate": 1.0600465700613264
+        },
+        {
+          "timestamp": 1774877183,
+          "block": 24770703,
+          "rate": 1.061223769723611
+        },
+        {
+          "timestamp": 1775481983,
+          "block": 24820923,
+          "rate": 1.0623517426481948
+        },
+        {
+          "timestamp": 1776086783,
+          "block": 24871142,
+          "rate": 1.0635033134364709
+        },
+        {
+          "timestamp": 1776691583,
+          "block": 24921399,
+          "rate": 1.0646773955502986
+        },
+        {
+          "timestamp": 1777296383,
+          "block": 24971669,
+          "rate": 1.0658608486647074
+        },
+        {
+          "timestamp": 1777901183,
+          "block": 25021919,
+          "rate": 1.066929929656651
+        },
+        {
+          "timestamp": 1778505983,
+          "block": 25072152,
+          "rate": 1.0679012793520666
+        },
+        {
+          "timestamp": 1779110783,
+          "block": 25122378,
+          "rate": 1.0688817414793548
+        },
+        {
+          "timestamp": 1779715583,
+          "block": 25172611,
+          "rate": 1.069998432697016
+        },
+        {
+          "timestamp": 1780320383,
+          "block": 25222813,
+          "rate": 1.0711706237359548
+        },
+        {
+          "timestamp": 1780925183,
+          "block": 25272983,
+          "rate": 1.0723463137676106
+        },
+        {
+          "timestamp": 1781529983,
+          "block": 25323191,
+          "rate": 1.073517001901695
+        },
+        {
+          "timestamp": 1782134783,
+          "block": 25373431,
+          "rate": 1.0746786586715182
+        },
+        {
+          "timestamp": 1782739583,
+          "block": 25423612,
+          "rate": 1.0759246674815686
+        },
+        {
+          "timestamp": 1783344383,
+          "block": 25473784,
+          "rate": 1.0770880100988534
+        },
+        {
+          "timestamp": 1783949183,
+          "block": 25523997,
+          "rate": 1.0782689835686887
+        },
+        {
+          "timestamp": 1784553983,
+          "block": 25574215,
+          "rate": 1.0793907720532614
+        },
+        {
+          "timestamp": 1785158783,
+          "block": 25624434,
+          "rate": 1.0805474644201318
+        },
+        {
+          "timestamp": 1785763583,
+          "block": 25674658,
+          "rate": 1.081757122382371
+        },
+        {
+          "timestamp": 1786368383,
+          "block": 25724884,
+          "rate": 1.0828401442147355
+        },
+        {
+          "timestamp": 1786973183,
+          "block": 25775091,
+          "rate": 1.0839529909037793
+        },
+        {
+          "timestamp": 1787577983,
+          "block": 25825326,
+          "rate": 1.0851539181310874
+        },
+        {
+          "timestamp": 1788182783,
+          "block": 25875549,
+          "rate": 1.0864665461712812
+        },
+        {
+          "timestamp": 1788787583,
+          "block": 25925764,
+          "rate": 1.0878863255524744
+        },
+        {
+          "timestamp": 1789392383,
+          "block": 25975988,
+          "rate": 1.0891220126364787
+        },
+        {
+          "timestamp": 1789997183,
+          "block": 26026174,
+          "rate": 1.0903954696121452
+        },
+        {
+          "timestamp": 1790601983,
+          "block": 26076244,
+          "rate": 1.0916275311371877
+        },
+        {
+          "timestamp": 1791206783,
+          "block": 26126455,
+          "rate": 1.0929154260345153
+        },
+        {
+          "timestamp": 1791811583,
+          "block": 26176683,
+          "rate": 1.0941363826809907
+        },
+        {
+          "timestamp": 1792416383,
+          "block": 26226910,
+          "rate": 1.0955108724512976
+        },
+        {
+          "timestamp": 1793021183,
+          "block": 26277150,
+          "rate": 1.0968458672678034
+        }
+      ],
+      "daily": [
+        {
+          "timestamp": 1790429183,
+          "block": 26061915,
+          "rate": 1.0912959861389369
+        },
+        {
+          "timestamp": 1790515583,
+          "block": 26069082,
+          "rate": 1.0914641495982889
+        },
+        {
+          "timestamp": 1790601983,
+          "block": 26076244,
+          "rate": 1.0916275311371877
+        },
+        {
+          "timestamp": 1790688383,
+          "block": 26083412,
+          "rate": 1.091791875289616
+        },
+        {
+          "timestamp": 1790774783,
+          "block": 26090585,
+          "rate": 1.0919651052470156
+        },
+        {
+          "timestamp": 1790861183,
+          "block": 26097756,
+          "rate": 1.092136584433529
+        },
+        {
+          "timestamp": 1790947583,
+          "block": 26104928,
+          "rate": 1.092317339162016
+        },
+        {
+          "timestamp": 1791033983,
+          "block": 26112102,
+          "rate": 1.0925187445539974
+        },
+        {
+          "timestamp": 1791120383,
+          "block": 26119280,
+          "rate": 1.0927166066807266
+        },
+        {
+          "timestamp": 1791206783,
+          "block": 26126455,
+          "rate": 1.0929154260345153
+        },
+        {
+          "timestamp": 1791293183,
+          "block": 26133623,
+          "rate": 1.0930968341582954
+        },
+        {
+          "timestamp": 1791379583,
+          "block": 26140799,
+          "rate": 1.0932782975447661
+        },
+        {
+          "timestamp": 1791465983,
+          "block": 26147971,
+          "rate": 1.093463638798988
+        },
+        {
+          "timestamp": 1791552383,
+          "block": 26155143,
+          "rate": 1.0936054743058088
+        },
+        {
+          "timestamp": 1791638783,
+          "block": 26162322,
+          "rate": 1.0937728810061025
+        },
+        {
+          "timestamp": 1791725183,
+          "block": 26169497,
+          "rate": 1.0939495821831984
+        },
+        {
+          "timestamp": 1791811583,
+          "block": 26176683,
+          "rate": 1.0941363826809907
+        },
+        {
+          "timestamp": 1791897983,
+          "block": 26183859,
+          "rate": 1.0943453178460594
+        },
+        {
+          "timestamp": 1791984383,
+          "block": 26191029,
+          "rate": 1.0945267441512527
+        },
+        {
+          "timestamp": 1792070783,
+          "block": 26198203,
+          "rate": 1.0947163512601394
+        },
+        {
+          "timestamp": 1792157183,
+          "block": 26205385,
+          "rate": 1.094933968248047
+        },
+        {
+          "timestamp": 1792243583,
+          "block": 26212563,
+          "rate": 1.0951283146769684
+        },
+        {
+          "timestamp": 1792329983,
+          "block": 26219738,
+          "rate": 1.095320647400332
+        },
+        {
+          "timestamp": 1792416383,
+          "block": 26226910,
+          "rate": 1.0955108724512976
+        },
+        {
+          "timestamp": 1792502783,
+          "block": 26234087,
+          "rate": 1.0956982562103705
+        },
+        {
+          "timestamp": 1792589183,
+          "block": 26241264,
+          "rate": 1.0958773836949218
+        },
+        {
+          "timestamp": 1792675583,
+          "block": 26248444,
+          "rate": 1.0960816342160649
+        },
+        {
+          "timestamp": 1792761983,
+          "block": 26255614,
+          "rate": 1.0962697362183733
+        },
+        {
+          "timestamp": 1792848383,
+          "block": 26262795,
+          "rate": 1.0964636095624072
+        },
+        {
+          "timestamp": 1792934783,
+          "block": 26269982,
+          "rate": 1.096653074676314
+        },
+        {
+          "timestamp": 1793021183,
+          "block": 26277150,
+          "rate": 1.0968458672678034
+        }
+      ],
+      "dailyApyDeviationWindow": {
+        "from": "2026-09-26T13:26:23.000Z",
+        "to": "2026-10-26T13:26:23.000Z"
+      }
+    }
+  },
+  "locked": [
+    {
+      "name": "liUSD-1w",
+      "bucketWeeks": 1,
+      "address": "0x12b004719fb632f1E7c010c6F5D6009Fb4258442",
+      "lockedIusd": 1012419.4582878269,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2058956787343755,
+          "endRate": 1.2074534128519667,
+          "realizedApy": 0.0696300739064462,
+          "advertisedApy": 0.06962994628737507,
+          "gapPoints": 0.000012761907113023607,
+          "driftPercent": 0.00017736380486701805
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.2010649292443194,
+          "endRate": 1.2074534128519667,
+          "realizedApy": 0.06667165065678632,
+          "advertisedApy": 0.06681167714195446,
+          "gapPoints": -0.01400264851681432,
+          "driftPercent": -0.20350241242584355
+        }
+      }
+    },
+    {
+      "name": "liUSD-2w",
+      "bucketWeeks": 2,
+      "address": "0xf1839BeCaF586814D022F16cDb3504ff8D8Ff361",
+      "lockedIusd": 25758.571916481964,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2098012631488044,
+          "endRate": 1.211395618510808,
+          "realizedApy": 0.07108487088113286,
+          "advertisedApy": 0.07108473787679426,
+          "gapPoints": 0.000013300433859830818,
+          "driftPercent": 0.00018094591486091035
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.2048572107681372,
+          "endRate": 1.211395618510808,
+          "realizedApy": 0.06806269130280124,
+          "advertisedApy": 0.06820862287494722,
+          "gapPoints": -0.014593157214598529,
+          "driftPercent": -0.20761802947054855
+        }
+      }
+    },
+    {
+      "name": "liUSD-3w",
+      "bucketWeeks": 3,
+      "address": "0xed2a360FfDC1eD4F8df0bd776a1FfbbE06444a0A",
+      "lockedIusd": 1.215137766838317,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.22 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-4w",
+      "bucketWeeks": 4,
+      "address": "0x66bCF6151D5558AfB47c38B20663589843156078",
+      "lockedIusd": 2720408.8101143637,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2268843969726932,
+          "endRate": 1.2287864495505894,
+          "realizedApy": 0.0841270018092983,
+          "advertisedApy": 0.08412681556500767,
+          "gapPoints": 0.000018624429062863435,
+          "driftPercent": 0.00021284469937558531
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.2209889946826045,
+          "endRate": 1.2287864495505894,
+          "realizedApy": 0.08052979302197494,
+          "advertisedApy": 0.0807340932054803,
+          "gapPoints": -0.020430018350536816,
+          "driftPercent": -0.244277846248537
+        }
+      }
+    },
+    {
+      "name": "liUSD-5w",
+      "bucketWeeks": 5,
+      "address": "0xf0c4A78fEbf4062aeD39A02BE8a4C72E9857d7d1",
+      "lockedIusd": 1.2325799460428368,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.23 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-6w",
+      "bucketWeeks": 6,
+      "address": "0xb06Cc4548FebfF3D66a680F9c516381c79bC9707",
+      "lockedIusd": 24791.664452853736,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2350408907701185,
+          "endRate": 1.2370354295625727,
+          "realizedApy": 0.08778180887357503,
+          "advertisedApy": 0.08778160610916963,
+          "gapPoints": 0.000020276440540478724,
+          "driftPercent": 0.0002217153469716984
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.2288596472334345,
+          "endRate": 1.2370354295625727,
+          "realizedApy": 0.0840223492131998,
+          "advertisedApy": 0.08424475734151415,
+          "gapPoints": -0.022240812831435253,
+          "driftPercent": -0.25447560677744174
+        }
+      }
+    },
+    {
+      "name": "liUSD-7w",
+      "bucketWeeks": 7,
+      "address": "0x3A744A6b57984eb62AeB36eB6501d268372cF8bb",
+      "lockedIusd": 1.2391545921555431,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.24 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-8w",
+      "bucketWeeks": 8,
+      "address": "0xf68b95b7e851170c0e5123a3249dD1Ca46215085",
+      "lockedIusd": 5281211.75187175,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2437136639267856,
+          "endRate": 1.2458830274352568,
+          "realizedApy": 0.09512840179903848,
+          "advertisedApy": 0.09512816370874555,
+          "gapPoints": 0.00002380902929255413,
+          "driftPercent": 0.00023945717122299641
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.236992405701255,
+          "endRate": 1.2458830274352568,
+          "realizedApy": 0.09104133995181446,
+          "advertisedApy": 0.09130246426472399,
+          "gapPoints": -0.02611243129095331,
+          "driftPercent": -0.27487580979936777
+        }
+      }
+    },
+    {
+      "name": "liUSD-9w",
+      "bucketWeeks": 9,
+      "address": "0xBB5cA732fAfEd8870F9C0e8406Ad707939c912E1",
+      "lockedIusd": 1.248687888150537,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.25 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-10w",
+      "bucketWeeks": 10,
+      "address": "0xd15fbf48c6dDdADC9Ef0693B060d80aF51cC26d5",
+      "lockedIusd": 1.2475896579287507,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.25 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-11w",
+      "bucketWeeks": 11,
+      "address": "0xed030a37Ec6EB308A416Dc64dD4b649A2BBE4FCd",
+      "lockedIusd": 1.2475896579287507,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.25 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-12w",
+      "bucketWeeks": 12,
+      "address": "0x3D360aB96B942c1251Ab061178F731eFEbc2d644",
+      "lockedIusd": 1.2475896579287507,
+      "evaluated": false,
+      "windows": {},
+      "skippedBecause": "holds 1.25 iUSD, below the 10000 iUSD minimum"
+    },
+    {
+      "name": "liUSD-13w",
+      "bucketWeeks": 13,
+      "address": "0xbd3f9814eB946E617f1d774A6762cDbec0bf087A",
+      "lockedIusd": 4907460.202587945,
+      "evaluated": true,
+      "windows": {
+        "7": {
+          "days": 7,
+          "startBlock": 26226910,
+          "startRate": 1.2554443886115938,
+          "endRate": 1.2577965691781736,
+          "realizedApy": 0.10252457681513205,
+          "advertisedApy": 0.10252430030404192,
+          "gapPoints": 0.000027651109013593356,
+          "driftPercent": 0.0002571996476873066
+        },
+        "30": {
+          "days": 30,
+          "startBlock": 26061915,
+          "startRate": 1.2481586464629322,
+          "endRate": 1.2577965691781736,
+          "realizedApy": 0.09810574514607341,
+          "advertisedApy": 0.09840897047419239,
+          "gapPoints": -0.030322532811898062,
+          "driftPercent": -0.2952822548706672
+        }
+      }
+    }
+  ],
+  "reserves": {
+    "block": 26277150,
+    "hash": "0x47a3780753e3bde4c5157bd68628e89ca411b4ac9a915ef4e5895fc6c658aab7",
+    "timestamp": 1793021183,
+    "iso": "2026-10-26T13:26:23.000Z",
+    "readable": true,
+    "asset": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "totalDeposits": 69260083.528555,
+    "totalDepositsDefinition": "iUSD totalSupply, taken at par with USDC (iUSD is minted 1:1 against USDC)",
+    "liquidReserves": 10680192.864076,
+    "maturityFarmAssets": 58580339.81222,
+    "maturityFarmInstantLiquidity": 7542013.293857,
+    "protocolFarmAssets": 0.001554,
+    "totalBacking": 69260532.67785,
+    "reserveRatio": 0.154204158,
+    "reserveRatioOfBacking": 0.154203158,
+    "instantRatio": 0.263098241,
+    "farms": [
+      {
+        "address": "0x49877d937B9a00d50557bdC3D87287b5c3a4C256",
+        "type": "protocol",
+        "name": null,
+        "docsSection": null,
+        "assets": 0,
+        "liquidity": 0
+      },
+      {
+        "address": "0xCb1747E89a43DEdcF4A2b831a0D94859EFeC7601",
+        "type": "protocol",
+        "name": null,
+        "docsSection": null,
+        "assets": 0.001554,
+        "liquidity": 0.001554
+      },
+      {
+        "address": "0x90787c1b99F47EFfEE0db0aB9D4e33CdC3e6bFa7",
+        "type": "protocol",
+        "name": "Multi Farm",
+        "docsSection": "liquid",
+        "assets": 0,
+        "liquidity": 0
+      },
+      {
+        "address": "0xda40ce7DdDBE7D54A106D32575b2CCF41dDb1A11",
+        "type": "protocol",
+        "name": null,
+        "docsSection": null,
+        "assets": 0,
+        "liquidity": 0
+      },
+      {
+        "address": "0xfD1Ea12d29B90630b265DBbc6Af88266d1a83dE4",
+        "type": "protocol",
+        "name": "3F Bridge Facilitator",
+        "docsSection": "illiquid",
+        "assets": 0,
+        "liquidity": 0
+      },
+      {
+        "address": "0xAc21B22B5aEb11bc32De4ecF59E4538fCa48b694",
+        "type": "liquid",
+        "name": "Liquid Cap stcUSD",
+        "docsSection": "liquid",
+        "assets": 7298591.379009,
+        "liquidity": 7298591.379009
+      },
+      {
+        "address": "0xd880D7C5CaFdbE2AEc281250995abF612235e563",
+        "type": "liquid",
+        "name": "Spark sUSDC",
+        "docsSection": "liquid",
+        "assets": 845372.275953,
+        "liquidity": 845372.275953
+      },
+      {
+        "address": "0xbFd5FC8DecA3C6128bfCE0FE46c25616811c3580",
+        "type": "liquid",
+        "name": "Aave USDC",
+        "docsSection": "liquid",
+        "assets": 2536229.209114,
+        "liquidity": 2536229.209114
+      },
+      {
+        "address": "0xe919C66475f2F30d285c768853E6B5b23ef181Cf",
+        "type": "maturity",
+        "name": "FalconX Institutional",
+        "docsSection": "illiquid",
+        "assets": 2032039.183348,
+        "liquidity": 0
+      },
+      {
+        "address": "0x277FdF6Dc5c53C5c2828188Da84B9593A50884C1",
+        "type": "maturity",
+        "name": "New Silver",
+        "docsSection": "illiquid",
+        "assets": 5235538.398613,
+        "liquidity": 0
+      },
+      {
+        "address": "0x79e1B8e45932A7C802eA3dAb3844e5DEa68d971f",
+        "type": "maturity",
+        "name": "New Silver 2 Senior",
+        "docsSection": "illiquid",
+        "assets": 5208069.473038,
+        "liquidity": 209.908302
+      },
+      {
+        "address": "0xbD6c2d1C4809a5D8847FbA3a3cf7d6BDf6b6C3bA",
+        "type": "maturity",
+        "name": null,
+        "docsSection": null,
+        "assets": 350017.828282,
+        "liquidity": 0
+      },
+      {
+        "address": "0x78A31bD6cAca12BdF83F8A608076006C1F58F363",
+        "type": "maturity",
+        "name": "f(x) fxSAVE",
+        "docsSection": "illiquid",
+        "assets": 8102981.144247,
+        "liquidity": 0
+      },
+      {
+        "address": "0x9E5efC5F387D8661C1AFB2469B7EeF6972451852",
+        "type": "maturity",
+        "name": "Fasanara Genesis Fund",
+        "docsSection": "illiquid",
+        "assets": 2621073.118614,
+        "liquidity": 0
+      },
+      {
+        "address": "0x2fa5E6C5549BEdF98A935Cac3BB4337459c74897",
+        "type": "maturity",
+        "name": "Fasanara mGLOBAL (GDADF)",
+        "docsSection": "illiquid",
+        "assets": 21367361.028008,
+        "liquidity": 7541803.385555
+      },
+      {
+        "address": "0xe9E44C0A68C49aDe51CdA5e027909C5996B5c71a",
+        "type": "maturity",
+        "name": "Pendle PT-reUSD-10DEC2026",
+        "docsSection": "illiquid",
+        "assets": 9034699.356544,
+        "liquidity": 0
+      },
+      {
+        "address": "0xA7c1DAEAA5D97e1319B4Ff6Cdf658F5C4582A27E",
+        "type": "maturity",
+        "name": null,
+        "docsSection": null,
+        "assets": 4628560.281526,
+        "liquidity": 0
+      }
+    ],
+    "apiCrossCheck": {
+      "note": "infiniFi API totals fetched about a minute after the pinned block; shown to confirm the on-chain read, not used in any ratio",
+      "apiLiquid": 10680191.809614,
+      "apiIlliquid": 58580338.02695,
+      "apiIusdSupply": 69260083.528555,
+      "liquidDifference": -1.0544619988650084,
+      "illiquidDifference": -1.7868239980139733,
+      "iusdSupplyDifference": 0
+    }
+  },
+  "missing": [
+    {
+      "field": "siUSD advertised APY over its whole life",
+      "reason": "the API publishes only 1-, 7- and 30-day averages; it has no history"
+    }
+  ]
+}
