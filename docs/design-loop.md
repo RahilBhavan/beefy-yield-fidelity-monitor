@@ -27,3 +27,42 @@ Use this bounded workflow for a focused interface improvement. A request to use 
 - `npx playwright test --workers=2`: 20/20 passed using a validation-only config with Desktop Firefox and a 390×844 Firefox viewport. Repository Chromium projects remain unchanged for CI.
 - Chromium local tests: partial interaction checks passed; screenshot and accessibility completion unavailable because capture hangs even for a standalone Hello page. Firefox provided completed visual/accessibility evidence.
 - `git diff --check`: passed.
+
+### Council round 1 — pinned head 7174954
+
+Actual reviewers: Claude Opus 5.5 / high (claudeAgent), GPT-6.1 Sol / high (Codex), Gemini 4 Argon High (Antigravity). Code scores: 8.0, 8.5, 8.3 / 10 respectively; Claude design score 7.0. Usage was not exposed. Full independent responses and task IDs are retained in `design-evidence/council-round-1.json`.
+
+| Finding | Source / severity | Disposition in shared repair |
+| --- | --- | --- |
+| Hidden phone sensitivity output | Claude D1 / medium; Gemini SPEC-01 / medium; Sol nonblocking | Fixed: remove forced minimum width; assert table has no inner horizontal overflow. |
+| Daily yield rounds to $0.00 | Claude D2 / medium-low | Fixed: positive sub-cent earnings display as `<$0.01`; no formula change. |
+| Invalid input contrast and disappearing announcement | Gemini STD-01 / medium; Claude S4 / low | Fixed: solid subdued text and persistent live region outside conditional results; invalid-state Axe check. |
+| Focus on light selected rows | Gemini STD-02 / low | Fixed: use current text color for inset outline; restore global input focus outline. |
+| Loading split/padding typo | Claude S1/S2; Gemini STD-03 / low | Fixed: same 5:7 geometry and padding as loaded state. |
+| Desktop accessibility proof absent | Sol SPEC-01 / medium | Fixed: homepage Axe no longer resets the desktop project to phone width. Explicit 1440×900 and 390×844 projects. |
+| Mobile input/result distance | Claude D3; Gemini design critique | Improved: shorter phone intro plus compact live result/source beside deposit, linked to detailed result. |
+| Styling selectors in tests | Claude S3 / low | Fixed: named result region replaces animation-class selectors. |
+| Order/icon inconsistency | Claude P2/D4 / low | Fixed: copy matches deposit-first form; consistent internal arrow. |
+| Empty desktop list; long catalog proof | Claude D5/V1; Gemini critique; Sol missing proof | Improved: cap desktop picker at 480px; phone remains 180px; exercise 26 vaults and a long-name selection. |
+| Reproduction and tablet evidence | Claude V3/V4; Gemini history-render gap | Fixed: committed Firefox switch and opt-in screenshot capture; render 768px and enabled historical-rate state. |
+| Many keyboard tab stops in catalog | Gemini nonblocking critique | Deferred: native buttons remain keyboard-operable; roving selection needs a separately scoped interaction change. |
+| Headline wording / quieter brand | Claude preference; Gemini tradeoff | Retained: planning language, source labels and caveats qualify estimates; task-first hierarchy is intentional. |
+
+Disagreement remains recorded: Sol treated the inherited phone table clipping as nonblocking; Gemini requested changes and Claude recommended repair. We accepted the evidence and fixed it regardless of severity labels.
+
+Repair budget: **1 used / 0 remaining**. Verification of this pass is pending. No further repair loop is authorized by this workflow's default.
+
+### Reproduce
+
+From an ordinary checkout with local dependencies, run `npm ci`, `npm run check`, and `npm run test:e2e` for CI's default Chromium projects. For the alternate engine: `npx playwright install firefox` then `E2E_BROWSER=firefox npm run test:e2e`.
+
+To regenerate the committed synthetic renders, run `E2E_BROWSER=firefox DESIGN_SCREENSHOTS_DIR="$PWD/docs/design-evidence" npx playwright test --project=desktop-firefox --grep 'sensitivity outputs|phone picker'`. Screenshots are opt-in; normal CI does not rewrite the committed evidence. Refresh SHA256SUMS after inspection. Build and install inside disk-backed scratch when following this machine's workspace instructions.
+
+### Repair proof
+
+- Lint, 54 unit tests and production build pass after the repair. Integration opt-in remains skipped.
+- Firefox suite: 24/24 pass, including desktop and phone homepage Axe scans, invalid-deposit and API-error Axe scans, 26-vault/long-name behavior, table fit and adjacent phone feedback. Two targeted capture tests also pass after final copy normalization.
+- Final synthetic renders inspected at 1440px, 768px and 390px; deposit field top is 578px, 526px and 666px respectively. Enabled historical rate is selected in the main renders. Phone summary updates from 42 days (headline) to 161 days (realized) in the interaction test.
+- Sensitivity output stays inside its container at both tested project widths. The phone picker remains at most 180px with 26 vaults.
+- Screenshot capture normalizes focus/scroll and waits for layout after resizing. Singular day labels were corrected during this same pass.
+- Local Chromium capture remains unavailable; CI's default desktop/mobile Chromium run is a merge gate. No Safari, native touch-device or human screen-reader test is claimed.

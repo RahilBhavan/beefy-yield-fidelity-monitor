@@ -176,11 +176,12 @@
   .estimate-result { animation: result-in 400ms ease-out both; }
   @keyframes result-in { from { opacity: .6; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 767px) {
-    .decision-intro { grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem 1.5rem; }
+    .decision-intro { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem; }
     .decision-intro-copy { font-size: 1rem; }
     .calculator-section { padding: 1.5rem 1rem; }
     .calculator-heading { display: block; padding-inline: .5rem; }
-    .calculator-heading > p { margin-top: .75rem; }
+    .calculator-heading > p { margin-top: .5rem; }
+    .decision-intro h1 { font-size: 2.75rem; }
     .evidence-section { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.5rem; }
     .evidence-rows > div { grid-template-columns: 1fr; gap: .5rem; }
   }

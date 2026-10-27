@@ -1,5 +1,5 @@
 import { Calculator } from '@/components/Calculator';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
         <div className="decision-intro-copy">
           <p>Before you deposit, see how long estimated earnings could take to cover your entry and exit costs.</p>
           <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4">
-            Review observed yield <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            Review observed yield <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </section>
@@ -24,7 +24,7 @@ export default function Home() {
             <p className="eyebrow text-[#FF765F]">01 / Plan a deposit</p>
             <h2 id="calculator-title">Break-Even Analyzer</h2>
           </div>
-          <p>Choose a vault. Set your deposit.<br />Compare the rate behind the estimate.</p>
+          <p>Set your deposit. Choose a vault.<br />Compare the rate behind the estimate.</p>
         </div>
         <Calculator />
         <p className="calculator-note">A planning estimate, not a guaranteed return. Token price changes, impermanent loss and swap costs can change your outcome.</p>

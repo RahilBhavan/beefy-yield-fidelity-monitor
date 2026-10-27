@@ -18,7 +18,7 @@ Motion off Final result remains visible; animation and transition reduced
 - Retain one primary heading and the existing Break-Even Analyzer heading for orientation.
 - Use sentence case and plain instructions in the form; keep technical IDs secondary.
 - Keep the result, selected vault, APY basis and uncertainty together. Never imply that headline APY is realized yield.
-- Bound the vault picker so a large catalog cannot bury the result on mobile.
+- Bound the vault picker; keep a compact result beside the deposit on mobile.
 - Keep sensitivity, fee provenance and methodology available. No new yield claims, sample results, network changes or investment recommendations.
 - Preserve keyboard-native radio controls, visible focus, live result announcements and all unavailable/loading/error states.
 
@@ -32,7 +32,7 @@ Homepage and calculator first. Shared navigation keeps existing routes. Existing
 2. Deposit, vault search/selection and APY basis remain keyboard accessible and update the displayed estimate.
 3. Selected vault and rate basis are visible beside the result. Invalid deposits explain the next step.
 4. Historical rates remain disabled without sufficient observations; API failures have a working retry.
-5. No page-level horizontal overflow at 390px; automated WCAG A/AA checks pass at desktop and phone widths in an available browser. Record engine-specific failures separately.
+5. No page-level or sensitivity-table horizontal overflow at 390px; automated WCAG A/AA checks pass at desktop and phone widths in an available browser. Record engine-specific failures separately.
 6. Existing model tests, lint and production build pass; no backend or financial logic changes.
 
 ## Verification limits
