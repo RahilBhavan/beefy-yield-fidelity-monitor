@@ -50,7 +50,7 @@ Actual reviewers: Claude Opus 5.5 / high (claudeAgent), GPT-6.1 Sol / high (Code
 
 Disagreement remains recorded: Sol treated the inherited phone table clipping as nonblocking; Gemini requested changes and Claude recommended repair. We accepted the evidence and fixed it regardless of severity labels.
 
-Repair budget: **1 used / 0 remaining**. Verification of this pass is pending. No further repair loop is authorized by this workflow's default.
+Repair budget: **1 used / 0 remaining**. Verification of this pass completed; see the final record below. No further repair loop is authorized by this workflow's default.
 
 ### Reproduce
 
@@ -66,3 +66,16 @@ To regenerate the committed synthetic renders, run `E2E_BROWSER=firefox DESIGN_S
 - Sensitivity output stays inside its container at both tested project widths. The phone picker remains at most 180px with 26 vaults.
 - Screenshot capture normalizes focus/scroll and waits for layout after resizing. Singular day labels were corrected during this same pass.
 - Local Chromium capture remains unavailable; CI's default desktop/mobile Chromium run is a merge gate. No Safari, native touch-device or human screen-reader test is claimed.
+
+
+### Final council verification and CI
+
+Reviewed implementation: `22288735561088c2bd286fe1ba73aeaf93e25a97`. The second round is complete: Claude Opus 5.5 high **approve, 8.6/10**; GPT-6.1 Sol high **approve, 9.0/10**; Gemini 4 Argon High **approve, 9.5/10**. No material finding or substantive disagreement remains. Full reports, actual settings and task IDs are in `design-evidence/council-round-2.json`. Usage was not exposed.
+
+The initial attempt to launch two verification tasks returned `parent_not_active`. Thread reconciliation confirmed they had not launched; the same stable request IDs were recovered, with no duplicate review round or additional repair.
+
+CI run `40426613668` passed on the reviewed implementation: lint, production build, dependency audit, migration checks, **52 tracked unit tests** (one opt-in integration test skipped), and **24 desktop/mobile Chromium browser checks**. Both Vercel checks also passed. The earlier local 54-test count included two tests in an ignored scratch folder copied into validation; moving that validation-only copy outside the test root produced the same 52-test tracked suite as CI. The original workspace scratch folder was preserved.
+
+Accepted nonblocking limits: native catalog buttons create multiple tab stops; sparse desktop selections leave unused panel space; invalid phone guidance is farther down than the input; the screenshot indicator/hover treatment is development tooling. No Safari, physical-device, human screen-reader or human-usability validation is claimed. Automated Axe scans support only their tested states.
+
+This final record changes documentation only. Implementation and rendered artifact hashes remain those approved at `2228873`; no second repair was made. Merge still requires passing checks on the latest PR head and a fresh live head/base/review/mergeability inspection.
