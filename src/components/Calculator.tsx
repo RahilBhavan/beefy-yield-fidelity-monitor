@@ -198,7 +198,7 @@ export function Calculator() {
                 aria-busy="true"
                 aria-live="polite"
             >
-                <div className="flex flex-col gap-8 border-b-[1.5px] border-[#D6D6D6]/30 bg-[#2A2A2A] p-8 md:border-b-0 md:border-r-[1.5px]">
+                <div className="flex flex-col gap-5 lg:p-8 border-b-[1.5px] border-[#D6D6D6]/30 bg-[#2A2A2A] p-8 md:border-b-0 md:border-r-[1.5px]">
                     <div className="h-24 animate-pulse bg-[#D6D6D6]/10" aria-hidden="true" />
                     <div className="min-h-64 flex-1 animate-pulse bg-[#D6D6D6]/10" aria-hidden="true" />
                 </div>
@@ -229,14 +229,14 @@ export function Calculator() {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]">
+        <div className="calculator-workspace grid grid-cols-1 md:grid-cols-[5fr_7fr] gap-0 border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E]">
 
             {/* Input Panel - Brutalist forms */}
-            <div className="p-8 border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-[#D6D6D6]/30 flex flex-col space-y-8 bg-[#2A2A2A]">
+            <div className="p-5 lg:p-8 border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-[#D6D6D6]/30 flex flex-col space-y-8 bg-[#2A2A2A]">
 
                 <div>
                     <label htmlFor="deposit-input" className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 block">
-                        [INPUT] Intended Deposit Size : USD
+                        Intended deposit size (USD)
                     </label>
                     <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xl opacity-50" aria-hidden="true">$</span>
@@ -254,7 +254,7 @@ export function Calculator() {
 
                 <div className="flex-1 flex flex-col min-h-0">
                     <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-3 flex items-center justify-between" id="vault-list-label">
-                        <span>[SELECT] Target Vault</span>
+                        <span>Choose a vault</span>
                         <span className="px-2 py-0.5 border border-[#FF765F] text-[#FF765F] text-xs">BASE/L2</span>
                     </div>
                     <label htmlFor="vault-search" className="sr-only">Search vaults</label>
@@ -271,7 +271,7 @@ export function Calculator() {
                     </p>
                     {/* md+: absolute within the flex-1 wrapper so the list fills the column height set by the results panel instead of stretching it */}
                     <div className="relative flex-1 min-h-0 md:min-h-[250px]">
-                    <ul className="max-h-[250px] overflow-y-auto border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E] md:absolute md:inset-0 md:max-h-none" aria-labelledby="vault-list-label">
+                    <ul className="max-h-[180px] overflow-y-auto border-[1.5px] border-[#D6D6D6]/30 bg-[#1E1E1E] md:absolute md:inset-0 md:max-h-none" aria-labelledby="vault-list-label">
                         {filteredVaults.map((vault) => (
                             <li key={vault.id}>
                                 <button
@@ -283,12 +283,12 @@ export function Calculator() {
                                         : 'text-[#D6D6D6] hover:bg-[#D6D6D6]/10'
                                         }`}
                                 >
-                                    <span>
-                                        <span className={`block font-bold font-sans ${selectedVaultId === vault.id ? 'text-[#1E1E1E]' : ''}`}>{vault.name}</span>
+                                    <span className="min-w-0 pr-3">
+                                        <span className={`block break-words font-bold font-sans ${selectedVaultId === vault.id ? 'text-[#1E1E1E]' : ''}`}>{vault.name}</span>
                                         <span className="block text-xs font-mono opacity-80 uppercase">TVL: {formatTvl(vault.tvl)}</span>
                                         <span className="block break-all text-xs font-mono opacity-80">{vault.id}</span>
                                     </span>
-                                    <span className={`font-mono font-bold ${selectedVaultId === vault.id ? 'text-[#A82A18]' : ''}`}>
+                                    <span className={`shrink-0 font-mono font-bold ${selectedVaultId === vault.id ? 'text-[#A82A18]' : ''}`}>
                                         {formatPercentage(vault.apy)}
                                     </span>
                                 </button>
@@ -306,14 +306,15 @@ export function Calculator() {
             </div>
 
             {/* Output Panel - High Contrast Output */}
-            <div className="p-8 flex flex-col relative bg-[#1E1E1E]">
+            <div className="p-5 lg:p-8 min-w-0 flex flex-col relative bg-[#1E1E1E]">
 
                 {calculations ? (
-                    <div className="flex flex-col h-full justify-between">
+                    <div className="estimate-result flex flex-col h-full justify-between">
                         <div className="w-full mb-8">
                             <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6] mb-2 border-b-[1.5px] border-[#D6D6D6]/30 pb-2">
-                                Break-even estimate
+                                Your break-even estimate
                             </div>
+                            <p className="mt-3 break-words text-base font-semibold text-[#EBEBEB]">{selectedVault?.name}</p>
 
 
                             <div className="mt-6 flex flex-col items-center justify-center text-center">
@@ -340,7 +341,7 @@ export function Calculator() {
 
                             <fieldset className="mt-6">
                                 <legend className="mb-2 font-mono text-xs font-bold uppercase tracking-wider text-[#D6D6D6]">
-                                    [SELECT] APY input
+                                    APY input
                                 </legend>
                                 <div className="flex flex-col border-[1.5px] border-[#D6D6D6]/30">
                                     {rateOptions.map((option) => {
@@ -374,7 +375,7 @@ export function Calculator() {
                                                             {option.apy === null ? 'N/A' : formatPercentage(option.apy)}
                                                         </span>
                                                     </span>
-                                                    <span id={detailId} className="mt-1 block font-mono text-xs leading-snug">
+                                                    <span id={detailId} className="mt-1 block text-sm leading-relaxed">
                                                         {rateDetail(option.basis, option.disabledReason)}
                                                     </span>
                                                 </span>
@@ -382,7 +383,7 @@ export function Calculator() {
                                         );
                                     })}
                                 </div>
-                                <p id="rate-basis-caveat" className="mt-2 font-mono text-xs leading-relaxed text-[#D6D6D6]/70">
+                                <p id="rate-basis-caveat" className="mt-2 text-sm leading-relaxed text-[#AFAFAF]">
                                     Historical rates use the export&apos;s rolling 90-day window. Share price is measured in the vault&apos;s LP token, so token price moves, impermanent loss and swap costs are not included.
                                 </p>
                             </fieldset>
@@ -391,15 +392,15 @@ export function Calculator() {
                         <div className="w-full font-mono text-xs uppercase font-bold text-[#D6D6D6] space-y-3 mt-auto">
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
                                 <span>Estimated daily earnings</span>
-                                <span className="text-green-500">+{formatCurrency(calculations.dailyYield)}</span>
+                                <span className="text-[#EBEBEB]">+{formatCurrency(calculations.dailyYield)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
                                 <span>Estimated deposit fee</span>
-                                <span className="text-[#FE5238]">-{formatCurrency(calculations.gasEntry)}</span>
+                                <span className="text-[#FF765F]">-{formatCurrency(calculations.gasEntry)}</span>
                             </div>
                             <div className="flex justify-between border-b border-[#D6D6D6]/10 pb-1">
                                 <span>Estimated withdrawal fee</span>
-                                <span className="text-[#FE5238]">-{formatCurrency(calculations.gasExit)}</span>
+                                <span className="text-[#FF765F]">-{formatCurrency(calculations.gasExit)}</span>
                             </div>
 
                             <div className="pt-2 flex justify-between bg-[#EBEBEB] text-[#1E1E1E] p-2">
@@ -423,7 +424,7 @@ export function Calculator() {
                                     </thead>
                                     <tbody className="divide-y divide-[#D6D6D6]/20">
                                         {scenarios.map((scenario) => (
-                                            <tr key={scenario.label} className={scenario.label === 'Current' ? 'text-[#FE5238]' : ''}>
+                                            <tr key={scenario.label} className={scenario.label === 'Current' ? 'bg-[#2A2A2A] text-[#FF765F]' : ''}>
                                                 <td className="p-2 font-bold">{scenario.label}</td>
                                                 <td className="p-2">{formatPercentage(scenario.apy)}</td>
                                                 <td className="p-2">{formatCurrency(scenario.totalGasCostUsd)}</td>
@@ -433,7 +434,7 @@ export function Calculator() {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="mt-2 font-mono text-xs text-[#D6D6D6]/70">
+                            <p className="mt-2 text-sm leading-relaxed text-[#AFAFAF]">
                                 Current uses the selected APY input. Downside assumes 25% lower APY and 50% higher fees; upside assumes 25% higher APY and 25% lower fees.
                             </p>
                         </div>
@@ -448,7 +449,7 @@ export function Calculator() {
                         )}
 
                         {gasData && (
-                            <p className="mt-4 font-mono text-xs leading-relaxed text-[#D6D6D6]/70">
+                            <p className="mt-4 text-sm leading-relaxed text-[#AFAFAF]">
                                 Network fee estimate updated {formatTimestamp(gasData.estimatedAt)}. {gasData.assumptions}
                                 {' '}The headline APY already includes Beefy&apos;s reported performance fee ({formatPercentage(selectedVault?.performanceFee ?? 0)}).
                                 {sourceData && <> Vault rates updated {formatTimestamp(sourceData.beefyFetchedAt)} for chain {sourceData.chainId}.</>}

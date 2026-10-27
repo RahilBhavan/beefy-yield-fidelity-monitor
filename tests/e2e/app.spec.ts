@@ -80,10 +80,10 @@ test('calculator disables historical rates when snapshot history is unavailable'
 test('calculator presents its model and methodology', async ({ page }) => {
     await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /yield/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /make yield/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Break-Even Analyzer' })).toBeVisible();
     await expect(page.getByRole('link', { name: /methodology and limitations/i })).toBeVisible();
-    await expect(page.getByText('Test Vault')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Test Vault/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Sensitivity analysis' })).toBeVisible();
     await expect(page.getByRole('table', { name: /break-even sensitivity/i })).toBeVisible();
 });
@@ -150,4 +150,36 @@ test('health and export expose explicit unconfigured states', async ({ request }
     const exportResponse = await request.get('/api/export');
     expect(exportResponse.status()).toBe(503);
     await expect(exportResponse.json()).resolves.toMatchObject({ code: 'DATA_NOT_CONFIGURED' });
+});
+
+
+test('deposit planning stays discoverable and recovers from invalid input and search', async ({ page }) => {
+    await page.route('**/api/data', (route) => route.fulfill({ json: calculatorData }));
+    await page.goto('/');
+    const deposit = page.getByLabel(/intended deposit size/i);
+    await expect(deposit).toBeVisible();
+    const position = await deposit.boundingBox();
+    expect(position?.y).toBeLessThan(page.viewportSize()!.width < 768 ? 720 : 900);
+    await deposit.fill('0');
+    await expect(page.getByText('Choose a vault and enter a deposit greater than $0 to see an estimate.')).toBeVisible();
+    await deposit.fill('10');
+    await expect(page.getByRole('status').filter({ hasText: /estimated time to recover fees/i })).toContainText('42 days');
+    await expect(page.locator('.estimate-result')).toContainText('Test Vault');
+    await page.getByLabel('Search vaults').fill('no such vault');
+    await expect(page.getByText('No vaults match your search.')).toBeVisible();
+    await page.getByLabel('Search vaults').fill('Test');
+    await expect(page.getByRole('button', { name: /Test Vault/ })).toBeVisible();
+});
+
+test('calculator retries a failed rate request', async ({ page }) => {
+    let unavailable = true;
+    await page.route('**/api/data', (route) => {
+        return route.fulfill(unavailable ? { status: 503, json: { error: 'Unavailable' } } : { json: calculatorData });
+    });
+    await page.goto('/');
+    await expect(page.getByRole('alert').filter({ hasText: /Live vault or network data/i })).toBeVisible();
+    unavailable = false;
+    await page.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect(page.getByLabel(/intended deposit size/i)).toBeVisible();
+    await expect(page.locator('.estimate-result')).toContainText('Test Vault');
 });
